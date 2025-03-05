@@ -1,3 +1,4 @@
+package Lab1;
 /*
  * Computer graphics courses at Wroclaw University of Technology
  * (C) Wroclaw University of Technology, 2010

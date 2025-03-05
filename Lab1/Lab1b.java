@@ -1,3 +1,4 @@
+package Lab1;
 
 import java.awt.image.*;
 import java.io.*;
