@@ -26,10 +26,10 @@ package Lab1;
  
          // Ring center coordinates
          int x_c, y_c;
- 
-         // Predefined black and white RGB representations
-         // packed as integers
-         int black, white;
+        
+         //colors
+         int gray;
+         int gray_intensity;
  
          // Loop variables - indices of the current row and column
          int i, j;
@@ -45,10 +45,6 @@ package Lab1;
          // with RGB packed in the integer data type
          image = new BufferedImage(x_res, y_res, BufferedImage.TYPE_INT_RGB);
  
-         // Create packed RGB representation of black and white colors
-         black = int2RGB(0, 0, 0);
-         white = int2RGB(255, 255, 255);
- 
          // Find coordinates of the image center
          x_c = x_res / 2;
          y_c = y_res / 2;
@@ -58,22 +54,14 @@ package Lab1;
              for (j = 0; j < x_res; j++)
              {
                  double d;
-                 int r;
  
                  // Calculate distance to the image center
                  d = Math.sqrt((i - y_c) * (i - y_c) + (j - x_c) * (j - x_c));
- 
-                 // Find the ring index
-                 r = (int) d / w;
- 
-                 // Make decision on the pixel color
-                 // based on the ring index
-                 if (r % 2 == 0)
-                     // Even ring - set black color
-                     image.setRGB(j, i, black);
-                 else
-                     // Odd ring - set white color
-                     image.setRGB(j, i, white);
+
+                 gray_intensity = (int) (128 * (Math.sin(Math.PI * d / w) + 1));
+                 gray = int2RGB(gray_intensity, gray_intensity, gray_intensity); 
+
+                 image.setRGB(j, i, gray);
              }
  
          // Save the created image in a graphics file
