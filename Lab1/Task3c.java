@@ -1,8 +1,6 @@
 package Lab1;
 
  import java.awt.image.*;
- import java.io.*;
- import javax.imageio.*;
  
  public class Task3c
  {
@@ -25,14 +23,9 @@ package Lab1;
          // Loop variables - indices of the current row and column
          int i, j;
  
-         // ring width
-         int w;
- 
          // Get required image resolution from command line arguments
          x_res = Integer.parseInt(args[0].trim());
          y_res = Integer.parseInt(args[1].trim());
-
-         w = Integer.parseInt(args[2].trim());
  
          // Initialize an empty image, use pixel format
          // with RGB packed in the integer data type
@@ -51,13 +44,24 @@ package Lab1;
              for (j = 0; j < x_res; j++)
              {
                  double d;
-                 int r;
+
+                 // Initial ring index
+                 int r = 0;
+
+                 // Initial width of the ring
+                 int w = 1;
  
                  // Calculate distance to the image center
                  d = Math.sqrt((i - y_c) * (i - y_c) + (j - x_c) * (j - x_c));
  
-                 // Find the ring index
-                 r = (int) d / w;
+                 // Find the ring index adding 1px of width for each ring
+                 while(d > 0)
+                 {
+                    d -= w;
+                    r++;
+                    if (r % 2 == 0)
+                        w += 1;
+                 }
  
                  // Make decision on the pixel color
                  // based on the ring index
@@ -69,16 +73,7 @@ package Lab1;
                      image.setRGB(j, i, white);
              }
  
-         // Save the created image in a graphics file
-         try
-         {
-             ImageIO.write(image, "bmp", new File(args[3]));
-             System.out.println("Ring image created successfully");
-         }
-         catch (IOException e)
-         {
-             System.out.println("The image cannot be stored");
-         }
+         Utils.saveImage(image, args[2]);
      }
  }
  
