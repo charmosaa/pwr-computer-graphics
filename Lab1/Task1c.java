@@ -1,8 +1,6 @@
 package Lab1;
 
 import java.awt.image.*;
-import java.io.*;
-import javax.imageio.*;
 
 public class Task1c
 {
@@ -22,10 +20,10 @@ public class Task1c
         int color_first;
         int color_second;
 
-        // Get defined chessboard parameters
+        // Get defined chessboard parameters from command line arguments
         tail_size = Integer.parseInt(args[0].trim()); 
-        color_first = Task1a.int2RGB(Integer.parseInt(args[1].trim()),Integer.parseInt(args[2].trim()),Integer.parseInt(args[3].trim()));
-        color_second = Task1a.int2RGB(Integer.parseInt(args[4].trim()),Integer.parseInt(args[5].trim()),Integer.parseInt(args[6].trim()));
+        color_first = Utils.int2RGB(Integer.parseInt(args[1].trim()),Integer.parseInt(args[2].trim()),Integer.parseInt(args[3].trim()));
+        color_second = Utils.int2RGB(Integer.parseInt(args[4].trim()),Integer.parseInt(args[5].trim()),Integer.parseInt(args[6].trim()));
 
         //Calculate the size of the board
         x_res = y_res = 8 * tail_size;
@@ -48,16 +46,7 @@ public class Task1c
                     image.setRGB(j, i, color_second);
             }
 
-        // Save the created image in a graphics file
-        try
-        {
-            ImageIO.write(image, "bmp", new File(args[7]));
-            System.out.println("Grid image created successfully");
-        }
-        catch (IOException e)
-        {
-            System.out.println("The image cannot be stored");
-        }
+        Utils.saveImage(image, args[7]);
     }
 }
 

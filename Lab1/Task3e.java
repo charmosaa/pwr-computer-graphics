@@ -1,8 +1,6 @@
 package Lab1;
 
 import java.awt.image.*;
-import java.io.*;
-import javax.imageio.*;
 
 public class Task3e
 {
@@ -37,8 +35,8 @@ public class Task3e
         parts = Integer.parseInt(args[2].trim());
         
 
-        color_first = Task1a.int2RGB(0,0,0);
-        color_second = Task1a.int2RGB(255,255,255);
+        color_first = Utils.int2RGB(0,0,0);
+        color_second = Utils.int2RGB(255,255,255);
 
         // Initialize an empty image, use pixel format
         // with RGB packed in the integer data type
@@ -58,7 +56,7 @@ public class Task3e
                 // distance to the center  
                 int dx,dy;
 
-                // Calculate distance to the image center
+                // Calculate distance x and y to the image center
                 dx = j - x_c;
                 dy = i - y_c;
 
@@ -68,6 +66,7 @@ public class Task3e
                 }
                 double degrees = Math.toDegrees(theta);
 
+                // Calculate which part of the circle is the pixel
                 int part_index = (int)(degrees / angle);
 
                 // Make decision on the pixel color
@@ -78,15 +77,7 @@ public class Task3e
             }
 
         // Save the created image in a graphics file
-        try
-        {
-            ImageIO.write(image, "bmp", new File(args[3]));
-            System.out.println("Image created successfully");
-        }
-        catch (IOException e)
-        {
-            System.out.println("The image cannot be stored");
-        }
+        Utils.saveImage(image, args[3]);
     }
 }
 

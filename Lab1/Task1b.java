@@ -1,8 +1,6 @@
 package Lab1;
 
 import java.awt.image.*;
-import java.io.*;
-import javax.imageio.*;
 
 public class Task1b
 {
@@ -28,18 +26,16 @@ public class Task1b
         int color_grid;
         int color_background;
 
-
-
         // Get required image resolution from command line arguments
         x_res = Integer.parseInt(args[0].trim());
         y_res = Integer.parseInt(args[1].trim());
 
-        // Get defined grid parameters
+        // Get defined grid parameters from command line arguments
         grid_width = Integer.parseInt(args[2].trim());
         grid_x_distance = Integer.parseInt(args[3].trim()); 
         grid_y_distance = Integer.parseInt(args[4].trim()); 
-        color_grid = Task1a.int2RGB(Integer.parseInt(args[5].trim()),Integer.parseInt(args[6].trim()),Integer.parseInt(args[7].trim()));
-        color_background = Task1a.int2RGB(Integer.parseInt(args[8].trim()),Integer.parseInt(args[9].trim()),Integer.parseInt(args[10].trim()));
+        color_grid = Utils.int2RGB(Integer.parseInt(args[5].trim()),Integer.parseInt(args[6].trim()),Integer.parseInt(args[7].trim()));
+        color_background = Utils.int2RGB(Integer.parseInt(args[8].trim()),Integer.parseInt(args[9].trim()),Integer.parseInt(args[10].trim()));
 
         // Initialize an empty image, use pixel format
         // with RGB packed in the integer data type
@@ -56,30 +52,23 @@ public class Task1b
                 double dx;
                 double dy;
 
-                // Calculate distance to the image center
+                // Calculate distance to the image center for x and y axis
                 dx = Math.abs(j - x_c);
                 dy = Math.abs(i - y_c);
 
                 // Make decision on the pixel color
-                // based on the ring index
                 if (dx % (grid_x_distance + grid_width) > grid_x_distance/2 && dx % (grid_x_distance + grid_width) <= grid_x_distance/2+grid_width)
                     image.setRGB(j, i, color_grid);
+
                 else if (dy % (grid_y_distance + grid_width) > grid_y_distance/2 && dy % (grid_y_distance + grid_width) <= grid_y_distance/2+grid_width)
                     image.setRGB(j, i, color_grid);
+
                 else
                     // Odd ring - set white color
                     image.setRGB(j, i, color_background);
             }
 
         // Save the created image in a graphics file
-        try
-        {
-            ImageIO.write(image, "bmp", new File(args[11]));
-            System.out.println("Grid image created successfully");
-        }
-        catch (IOException e)
-        {
-            System.out.println("The image cannot be stored");
-        }
+        Utils.saveImage(image, args[11]);
     }
 }

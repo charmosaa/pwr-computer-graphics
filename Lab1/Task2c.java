@@ -1,14 +1,12 @@
 package Lab1;
 
 import java.awt.image.*;
-import java.io.*;
-import javax.imageio.*;
 
 public class Task2c
 {
     public static void main(String[] args)
     {
-        System.out.println("Grid pattern synthesis");
+        System.out.println("Pattern synthesis");
 
         BufferedImage image;
 
@@ -18,31 +16,27 @@ public class Task2c
         // Loop variables - indices of the current row and column
         int i, j;
 
+        // size of each part of the chessboard
         int tail_size;
-        int black;
 
-        try {
-            image = ImageIO.read(new File(args[0]));  
-        } catch (IOException e) {
-            System.out.println("Error loading image: " + e.getMessage());
-            return;
-        }
+        // color
+        int black = Utils.int2RGB(0,0,0);
 
-        black = Task1a.int2RGB(0,0,0);
+        image = Utils.loadImage(args[0]);
 
         //Calculate the size of the board
         x_res = image.getWidth();
         y_res = image.getHeight();
 
+        // Crop the image to a square
         if(x_res < y_res)
             y_res = x_res;
         else
             x_res = y_res;
 
-        // Initialize an empty image, use pixel format
-        // with RGB packed in the integer data type
         image = image.getSubimage(0, 0, x_res, y_res);
 
+        // Calculate the size of each part of the chessboard
         tail_size = x_res / 8;
 
         // Process the image, pixel by pixel
@@ -57,16 +51,7 @@ public class Task2c
                     image.setRGB(j, i, black);
             }
 
-        // Save the created image in a graphics file
-        try
-        {
-            ImageIO.write(image, "bmp", new File(args[1]));
-            System.out.println("Grid image created successfully");
-        }
-        catch (IOException e)
-        {
-            System.out.println("The image cannot be stored");
-        }
+        Utils.saveImage(image, args[1]);
     }
 }
 

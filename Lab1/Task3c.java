@@ -39,8 +39,8 @@ package Lab1;
          image = new BufferedImage(x_res, y_res, BufferedImage.TYPE_INT_RGB);
  
          // Create packed RGB representation of black and white colors
-         black = Task1a.int2RGB(0, 0, 0);
-         white = Task1a.int2RGB(255, 255, 255);
+         black = Utils.int2RGB(0, 0, 0);
+         white = Utils.int2RGB(255, 255, 255);
  
          // Find coordinates of the image center
          x_c = x_res / 2;

@@ -1,8 +1,6 @@
 package Lab1;
 
 import java.awt.image.*;
-import java.io.*;
-import javax.imageio.*;
 
 public class Task2b
 {
@@ -21,27 +19,23 @@ public class Task2b
         // Loop variables - indices of the current row and column
         int i, j;
 
+        // Grid parameters
         int grid_width;
         int grid_x_distance;
         int grid_y_distance;
 
-        int black;
+        // color
+        int black = Utils.int2RGB(0,0,0);
 
-        try {
-            image = ImageIO.read(new File(args[0]));  
-        } catch (IOException e) {
-            System.out.println("Error loading image: " + e.getMessage());
-            return;
-        }
+        image = Utils.loadImage(args[0]);
 
         x_res = image.getWidth();
         y_res = image.getHeight();
 
-        // Get defined grid parameters
+        // Get defined grid parameters from command line arguments
         grid_width = Integer.parseInt(args[1].trim());
         grid_x_distance = Integer.parseInt(args[2].trim()); 
         grid_y_distance = Integer.parseInt(args[3].trim()); 
-        black = Task1a.int2RGB(0,0,0);
 
         // Find coordinates of the image center
         x_c = x_res / 2;
@@ -51,8 +45,8 @@ public class Task2b
         for (i = 0; i < y_res; i++)
             for (j = 0; j < x_res; j++)
             {
-                double dx;
-                double dy;
+                // Distance to the image center in x and y axis
+                double dx, dy;
 
                 // Calculate distance to the image center
                 dx = Math.abs(j - x_c);
@@ -61,20 +55,12 @@ public class Task2b
                 // Make decision on the pixel color based on the ring index
                 if (dx % (grid_x_distance + grid_width) > grid_x_distance/2 && dx % (grid_x_distance + grid_width) <= grid_x_distance/2+grid_width)
                     image.setRGB(j, i, black);
+
                 else if (dy % (grid_y_distance + grid_width) > grid_y_distance/2 && dy % (grid_y_distance + grid_width) <= grid_y_distance/2+grid_width)
                     image.setRGB(j, i, black);
             }
 
-        // Save the created image in a graphics file
-        try
-        {
-            ImageIO.write(image, "bmp", new File(args[4]));
-            System.out.println("Grid image created successfully");
-        }
-        catch (IOException e)
-        {
-            System.out.println("The image cannot be stored");
-        }
+        Utils.saveImage(image, args[4]);
     }
 
 }

@@ -10,8 +10,6 @@ package Lab1;
  */
 
  import java.awt.image.*;
- import java.io.*;
- import javax.imageio.*;
  
  public class Task1a
  {
@@ -63,34 +61,12 @@ package Lab1;
                 if (gray_intensity < 1) gray_intensity = 0;
                 if (gray_intensity > 254) gray_intensity = 255;
 
-                gray = int2RGB(gray_intensity, gray_intensity, gray_intensity); 
+                gray = Utils.int2RGB(gray_intensity, gray_intensity, gray_intensity); 
 
                 image.setRGB(j, i, gray);
              }
  
-         // Save the created image in a graphics file
-         try
-         {
-             ImageIO.write(image, "bmp", new File(args[2]));
-             System.out.println("Ring image created successfully");
-         }
-         catch (IOException e)
-         {
-             System.out.println("The image cannot be stored");
-         }
-     }
- 
-     // This method assembles RGB color intensities into single
-     // packed integer. Arguments must be in <0..255> range
-     static int int2RGB(int red, int green, int blue)
-     {
-         // Make sure that color intensities are in 0..255 range
-         red = red & 0x000000FF;
-         green = green & 0x000000FF;
-         blue = blue & 0x000000FF;
- 
-         // Assemble packed RGB using bit shift operations
-         return (red << 16) + (green << 8) + blue;
+         Utils.saveImage(image, args[2]);
      }
  }
  

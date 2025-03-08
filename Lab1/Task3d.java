@@ -1,8 +1,6 @@
 package Lab1;
 
 import java.awt.image.*;
-import java.io.*;
-import javax.imageio.*;
 
 public class Task3d
 {
@@ -39,9 +37,9 @@ public class Task3d
         r = Integer.parseInt(args[2].trim()); 
         w = Integer.parseInt(args[3].trim());
         
-
-        color_first = Task1a.int2RGB(0,0,0);
-        color_second = Task1a.int2RGB(255,255,255);
+        //set colors to black and white in this case
+        color_first = Utils.int2RGB(0,0,0);
+        color_second = Utils.int2RGB(255,255,255);
 
         // Initialize an empty image, use pixel format
         // with RGB packed in the integer data type
@@ -55,28 +53,35 @@ public class Task3d
         for (i = 0; i < y_res; i++)
             for (j = 0; j < x_res; j++)
             {
+                // distance to the center for x and y
                 int dx,dy;
-                //grid center indexes
+
+                //grid center distances for x and y
                 int gx,gy;
 
                 //distance from grid center
                 double dg;
 
+                //ring index
                 int ring_index;
 
-                // Calculate distance to the image center
+                // Calculate distance x and y to the image center
                 dx = Math.abs(j - x_c);
                 dy = Math.abs(i - y_c);
 
                 gx = dx % (2*r);
                 gy = dy % (2*r);
 
+                //for the case when the distance is greater than the radius it belongs to another circle
                 if (gx > r)
                     gx = 2*r-gx;
                 if (gy > r)   
                     gy = 2*r-gy;
 
+                //calculate the distance from the center of the grid
                 dg = Math.sqrt(gx*gx + gy*gy);
+                
+                //find the ring index 
                 ring_index = (int)dg / w;
 
                 // Make decision on the pixel color
@@ -86,16 +91,7 @@ public class Task3d
                     image.setRGB(j, i, color_second);
             }
 
-        // Save the created image in a graphics file
-        try
-        {
-            ImageIO.write(image, "bmp", new File(args[4]));
-            System.out.println("Image created successfully");
-        }
-        catch (IOException e)
-        {
-            System.out.println("The image cannot be stored");
-        }
+        Utils.saveImage(image, args[4]);
     }
 }
 
