@@ -11,7 +11,7 @@ class Planet {
     Color color;
     double angle; // orbital angle 
     double orbital_period;
-
+    double moon_angle;
 
     public Planet(String name, double distance_from_sun, double radius, Color color) {
         this.name = name;
@@ -19,12 +19,15 @@ class Planet {
         this.radius = radius;
         this.color = color;
         angle = Math.random() * 2 * Math.PI; // initial position - random
+        moon_angle = Math.random() * 2 * Math.PI;
         orbital_period = Math.sqrt(Math.pow(distance_from_sun, 3));
     }
 
     // simylate the motion
     public void updatePosition() {
         this.angle += 0.01 / orbital_period; // formula for speed for each planet
+        if(this.name.equals("Earth"))
+            this.moon_angle += 0.04;
     }
 }
 
@@ -49,10 +52,13 @@ public class SolarSystem {
 
 class SolarPane extends JPanel {
 
-    int center_x, center_y; // center of the sun - center of the solar system
-    static int r_sun = 40; // sun radius
-    static int AU = 150; // distance from the sun to the Earth
-    ArrayList<Planet> planets = new ArrayList<>();
+    int center_x, center_y;                         // center of the sun - center of the solar system
+    static int r_sun = 40;                          // sun radius
+    static int AU = 150;                            // distance from the sun to the Earth
+    static double moon_r_ratio = 0.27;              //moon radius compared to earth
+    static double moon_distance_ratio = 0.016;      //distance from earth to the moon in AU
+
+    ArrayList<Planet> planets = new ArrayList<>();  //planets data
     
     SolarPane() {
         
@@ -89,12 +95,37 @@ class SolarPane extends JPanel {
         int radius  = (int) (planet.radius * r_sun);
         int distance_from_sun = (int)(planet.distance_from_sun * AU);
 
+        // claculate the planet's position
         int planet_x = center_x + (int) ((distance_from_sun* Math.cos(planet.angle)) - radius);
         int planet_y = center_y + (int) ((distance_from_sun * Math.sin(planet.angle)) - radius);
     
         g2d.fillOval(planet_x, planet_y, 2 * radius, 2 *radius);
+
+        if(planet.name.equals("Earth"))
+            DrawMoon(g, planet, planet_x, planet_y);
+            
     }
     
+    public void DrawMoon(Graphics g, Planet earth ,int earth_x, int earth_y) 
+    {
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setColor(Color.white); 
+
+        double moon_distance = moon_distance_ratio * AU;                    // scaled distance from Earth in pixels
+        int moon_radius = (int) (moon_r_ratio * earth.radius * r_sun);      // scaled Moon size
+        int earth_radius = (int)(earth.radius * r_sun);
+        
+        //calculate the current earth center
+        int earth_center_x = earth_x + earth_radius;
+        int earth_center_y = earth_y + earth_radius;
+    
+        // calculate Moon's position relative to Earth's center
+        int moon_x = earth_center_x + (int) ((earth_radius + moon_distance + moon_radius)* Math.cos(earth.moon_angle) - moon_radius);
+        int moon_y = earth_center_y + (int) ((earth_radius + moon_distance + moon_radius) * Math.sin(earth.moon_angle) - moon_radius);
+    
+        g2d.fillOval(moon_x, moon_y, 2 * moon_radius, 2 * moon_radius);
+    }
+
 
     public void DrawSun(Graphics g) 
     {
@@ -118,7 +149,6 @@ class SolarPane extends JPanel {
             DrawPlanet(g, planet);
             planet.updatePosition();
         }
-
     }
 }
 
