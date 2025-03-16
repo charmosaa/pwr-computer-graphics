@@ -45,7 +45,7 @@ public class Task3a
         image = new BufferedImage(x_res, y_res, BufferedImage.TYPE_INT_RGB);
 
          // Find coordinates of the image center
-         x_c = x_res / 2;
+         x_c = x_res / 2 + 150;
          y_c = y_res / 2;
 
         // Process the image, pixel by pixel

@@ -61,9 +61,9 @@ public class Task3e
                 dy = i - y_c;
 
                 double theta = Math.atan2(dx, dy);
-                if (theta < 0) {
+                if (theta < 0) 
                     theta += 2 * Math.PI; 
-                }
+                    
                 double degrees = Math.toDegrees(theta);
 
                 // Calculate which part of the circle is the pixel
