@@ -18,16 +18,16 @@ class Planet {
         this.distance_from_sun = distance_from_sun;
         this.radius = radius;
         this.color = color;
-        angle = Math.random() * 2 * Math.PI; // initial position - random
+        angle = Math.random() * 2 * Math.PI;    // initial position - random in this case
         moon_angle = Math.random() * 2 * Math.PI;
         orbital_period = Math.sqrt(Math.pow(distance_from_sun, 3));
     }
 
     // simylate the motion
     public void updatePosition() {
-        this.angle += 0.01 / orbital_period; // formula for speed for each planet
+        this.angle -= 0.01 / orbital_period;    // formula for speed for each planet
         if(this.name.equals("Earth"))
-            this.moon_angle += 0.04;
+            this.moon_angle -= 0.13;            //moon moves about 13 times faster around the earth than the earth around the sun
     }
 }
 
@@ -56,7 +56,7 @@ class SolarPane extends JPanel {
     static int r_sun = 40;                          // sun radius
     static int AU = 150;                            // distance from the sun to the Earth
     static double moon_r_ratio = 0.27;              //moon radius compared to earth
-    static double moon_distance_ratio = 0.016;      //distance from earth to the moon in AU
+    static double moon_distance_ratio = 0.18;      //distance from earth to the moon in AU
 
     ArrayList<Planet> planets = new ArrayList<>();  //planets data
     
@@ -108,9 +108,11 @@ class SolarPane extends JPanel {
     
     public void DrawMoon(Graphics g, Planet earth ,int earth_x, int earth_y) 
     {
+        DrawMoonTrail(g, earth, earth_x, earth_y);
         Graphics2D g2d = (Graphics2D) g;
-        g2d.setColor(Color.white); 
+        g2d.setColor(Color.LIGHT_GRAY); 
 
+        //scaled distances
         double moon_distance = moon_distance_ratio * AU;                    // scaled distance from Earth in pixels
         int moon_radius = (int) (moon_r_ratio * earth.radius * r_sun);      // scaled Moon size
         int earth_radius = (int)(earth.radius * r_sun);
@@ -120,11 +122,27 @@ class SolarPane extends JPanel {
         int earth_center_y = earth_y + earth_radius;
     
         // calculate Moon's position relative to Earth's center
-        int moon_x = earth_center_x + (int) ((earth_radius + moon_distance + moon_radius)* Math.cos(earth.moon_angle) - moon_radius);
-        int moon_y = earth_center_y + (int) ((earth_radius + moon_distance + moon_radius) * Math.sin(earth.moon_angle) - moon_radius);
+        int moon_x = earth_center_x + (int) ( moon_distance * Math.cos(earth.moon_angle) - moon_radius);
+        int moon_y = earth_center_y + (int) ( moon_distance * Math.sin(earth.moon_angle) - moon_radius);
     
         g2d.fillOval(moon_x, moon_y, 2 * moon_radius, 2 * moon_radius);
     }
+
+    public void DrawMoonTrail(Graphics g, Planet earth, int earth_x, int earth_y) 
+    {
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setColor(Color.white);
+
+        // scaled dostances
+        int moon_distance = (int)(moon_distance_ratio * AU);  
+        int earth_radius = (int)(earth.radius * r_sun);
+
+        //calculate the current earth center
+        int earth_center_x = earth_x + earth_radius;
+        int earth_center_y = earth_y + earth_radius;
+
+        g2d.drawOval(earth_center_x - moon_distance, earth_center_y - moon_distance, 2 * moon_distance, 2 * moon_distance);
+    }    
 
 
     public void DrawSun(Graphics g) 
