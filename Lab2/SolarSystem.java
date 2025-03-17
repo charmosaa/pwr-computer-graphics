@@ -20,7 +20,7 @@ class Planet {
         this.color = color;
         angle = Math.random() * 2 * Math.PI;    // initial position - random in this case
         moon_angle = Math.random() * 2 * Math.PI;
-        orbital_period = Math.sqrt(Math.pow(distance_from_sun, 3));
+        orbital_period = Math.sqrt(Math.pow(distance_from_sun, 3)); // kepler's 3rd law
     }
 
     // simylate the motion
