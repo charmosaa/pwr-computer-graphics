@@ -16,7 +16,7 @@ class Ball{
         this.number = number;
         this.color = color;
         this.radius = 10;
-        this.speed = Math.random() * 5;
+        this.speed = Math.random() * 6;
         this.angle = Math.random() * 2 * Math.PI;
         this.torque = 0.002;
         this.position_x = Math.random() * (Snooker.WIDTH - 4*radius) + radius;
@@ -70,14 +70,19 @@ class SnookerPane extends JPanel {
         setBackground(new Color(10, 105, 10));
 
         // add snooker balls
-        balls.add(new Ball(1, Color.YELLOW));   // Yellow ball
-        balls.add(new Ball(2, Color.BLUE));    // Blue ball
-        balls.add(new Ball(3, Color.RED));     // Red ball
-        balls.add(new Ball(4, Color.PINK));    // Pink (Purple substitute)
-        balls.add(new Ball(5, Color.ORANGE));  // Orange (substituting for brown)
-        balls.add(new Ball(6, Color.GREEN));   // Green ball
-        balls.add(new Ball(7, Color.BLACK));   // Black ball
-        balls.add(new Ball(8, Color.WHITE));   // White cue ball
+        balls.add(new Ball(0, Color.YELLOW));   
+        balls.add(new Ball(1, Color.BLUE));    
+        balls.add(new Ball(2, Color.PINK));    
+        balls.add(new Ball(3, Color.ORANGE)); 
+        balls.add(new Ball(4, Color.GREEN));   
+        balls.add(new Ball(5, Color.BLACK));   
+        balls.add(new Ball(6, Color.WHITE));  
+                                                   
+        balls.add(new Ball(7, Color.RED));     
+        balls.add(new Ball(8, Color.RED));    
+        balls.add(new Ball(9, Color.RED));
+        balls.add(new Ball(10, Color.RED));
+        balls.add(new Ball(11, Color.RED));
     }
     
     
@@ -118,10 +123,63 @@ class SnookerPane extends JPanel {
     {
         for(Ball other : balls){
             if(ball.number != other.number && ball.distanceBetweenCenters(other) <= 2*ball.radius)
-                System.out.println("COLLISION");
+            {
+                // calculating the positions and angles of the collision
+                double dx = ball.position_x - other.position_x;
+                double dy = ball.position_y - other.position_y;
+                double theta = Math.atan2(dy, dx);
+
+                // getting the x and y speeds
+                double vx_ball = Math.cos(ball.angle) * ball.speed;
+                double vy_ball = Math.sin(ball.angle) * ball.speed;
+                double vx_other = Math.cos(other.angle) * other.speed;
+                double vy_other = Math.sin(other.angle) * other.speed;
+
+                // rotation to horizontal
+                double[] horizontal_ball = rotateVector(vx_ball, vy_ball, theta);
+                double[] horizontal_other = rotateVector(vx_other, vy_other, theta);
+
+                // from elastic collision v2f = v1i and v1f = v2i
+                // just taking the x
+                double v1f = horizontal_other[0];
+                double v2f = horizontal_ball[0];
+
+                // now we unrotate to get back 
+                double[] final_pos_ball = unrotateVector(v1f, horizontal_ball[1], theta);
+                double[] final_pos_other = unrotateVector(v2f, horizontal_ball[1], theta);
+
+                // now new angle recalculation
+                ball.angle = Math.atan2(final_pos_ball[1], final_pos_ball[0]);
+                other.angle = Math.atan2(final_pos_other[1], final_pos_other[0]);
+
+                // speed calculation
+                ball.speed = Math.sqrt(final_pos_ball[0]*final_pos_ball[0] + final_pos_ball[1]*final_pos_ball[1]);
+                other.speed = Math.sqrt(final_pos_other[0]*final_pos_other[0] + final_pos_other[1]*final_pos_other[1]);
+            }
 
         }
 
+    }
+
+    // rotating vectors so the balls are horizontal
+    public static double[] rotateVector(double vx, double vy, double theta) {
+        double cosTheta = Math.cos(theta);
+        double sinTheta = Math.sin(theta);
+
+        double vx1 = cosTheta * vx + sinTheta * vy;
+        double vy1 = (-sinTheta) * vx + cosTheta * vy;
+
+        return new double[]{vx1, vy1};
+    }
+
+    public static double[] unrotateVector(double vx, double vy, double theta) {
+        double cosTheta = Math.cos(theta);
+        double sinTheta = Math.sin(theta);
+
+        double vx1 = cosTheta * vx + (-sinTheta) * vy;
+        double vy1 = sinTheta * vx + cosTheta * vy;
+
+        return new double[]{vx1, vy1};
     }
 }
 
