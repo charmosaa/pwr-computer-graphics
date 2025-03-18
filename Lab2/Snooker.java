@@ -16,7 +16,7 @@ class Ball{
         this.number = number;
         this.color = color;
         this.radius = 10;
-        this.speed = Math.random() * 6;
+        this.speed = Math.random() * 8;
         this.angle = Math.random() * 2 * Math.PI;
         this.torque = 0.002;
         this.position_x = Math.random() * (Snooker.WIDTH - 4*radius) + radius;
@@ -33,8 +33,8 @@ class Ball{
     
     public double distanceBetweenCenters(Ball other)
     {
-        double dx = Math.abs(position_x - other.position_x);
-        double dy = Math.abs(position_y - other.position_y);
+        double dx = position_x - other.position_x;
+        double dy = position_y - other.position_y;
         return Math.sqrt(dx*dx + dy*dy);
     }
     
@@ -42,7 +42,7 @@ class Ball{
 
 
 public class Snooker {
-    static int HEIGHT = 400, WIDTH = 700;
+    static int HEIGHT = 400, WIDTH = 800;
 
     public static void main(String[] args) {
 
@@ -77,12 +77,9 @@ class SnookerPane extends JPanel {
         balls.add(new Ball(4, Color.GREEN));   
         balls.add(new Ball(5, Color.BLACK));   
         balls.add(new Ball(6, Color.WHITE));  
-                                                   
-        balls.add(new Ball(7, Color.RED));     
-        balls.add(new Ball(8, Color.RED));    
-        balls.add(new Ball(9, Color.RED));
-        balls.add(new Ball(10, Color.RED));
-        balls.add(new Ball(11, Color.RED));
+        
+        for(int i=0;i<15;i++)
+            balls.add(new Ball(i+7, Color.RED));  
     }
     
     
@@ -124,6 +121,17 @@ class SnookerPane extends JPanel {
         for(Ball other : balls){
             if(ball.number != other.number && ball.distanceBetweenCenters(other) <= 2*ball.radius)
             {
+                // resolving overlap problem
+                double overlap = 2 * ball.radius - ball.distanceBetweenCenters(other);
+                double cos_overlap = (ball.position_x - other.position_x) / ball.distanceBetweenCenters(other);
+                double sin_overlap = (ball.position_y - other.position_y) / ball.distanceBetweenCenters(other);
+
+                // moving each ball apart
+                ball.position_x += cos_overlap * (overlap / 2);
+                ball.position_y += sin_overlap * (overlap / 2);
+                other.position_x -= cos_overlap * (overlap / 2);
+                other.position_y -= sin_overlap * (overlap / 2);
+
                 // calculating the positions and angles of the collision
                 double dx = ball.position_x - other.position_x;
                 double dy = ball.position_y - other.position_y;
@@ -155,6 +163,7 @@ class SnookerPane extends JPanel {
                 // speed calculation
                 ball.speed = Math.sqrt(final_pos_ball[0]*final_pos_ball[0] + final_pos_ball[1]*final_pos_ball[1]);
                 other.speed = Math.sqrt(final_pos_other[0]*final_pos_other[0] + final_pos_other[1]*final_pos_other[1]);
+
             }
 
         }
