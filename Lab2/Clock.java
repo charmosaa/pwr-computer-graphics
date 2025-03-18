@@ -12,9 +12,7 @@ public class Clock {
         int pendulum_angle = Integer.parseInt(args[0].trim());
         int pendulum_period =Integer.parseInt(args[1].trim());
 
-        int pendulum_length = (int)(Math.pow(pendulum_period/(2*Math.PI),2) * 9.8);
-
-        ClockWindow wnd = new ClockWindow(pendulum_angle, pendulum_period, pendulum_length);
+        ClockWindow wnd = new ClockWindow(pendulum_angle, pendulum_period);
         wnd.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         wnd.setBounds(70, 70, 300, 300);
         wnd.setVisible(true);
@@ -39,11 +37,9 @@ class ClockPane extends JPanel {
     int ball_radius;
     int start_time;
     
-    ClockPane(int pendulum_angle, int pendulum_period, int pendulum_length) {
+    ClockPane(int pendulum_angle, int pendulum_period) {
         this.pendulum_angle = pendulum_angle;
         this.pendulum_period = pendulum_period;
-        this.pendulum_length = pendulum_length;
-        ball_radius = pendulum_length / 7;
         start_time = (int)System.currentTimeMillis() / 1000;
         setBackground(new Color(200, 200, 255));
         calendar = new GregorianCalendar();
@@ -97,9 +93,11 @@ class ClockPane extends JPanel {
         Graphics2D g2d = (Graphics2D) g;
         Dimension size = getSize();
         center_x = size.width / 2;
-        center_y = (size.height- pendulum_length - 2*ball_radius) / 2;
-        r_outer = Math.min(size.width, size.height - pendulum_length - 2*ball_radius) / 2;
+        center_y = (size.height - 2*ball_radius) / 6;
+        r_outer = Math.min(size.width, (size.height- 2*ball_radius)/3) / 2;
         r_inner = r_outer - TICK_LEN;
+        pendulum_length = 4 * center_y;
+        ball_radius = pendulum_length / 10;
         Date time = new Date();
         calendar.setTime(time);
         minute = calendar.get(Calendar.MINUTE);
@@ -121,8 +119,8 @@ class ClockPane extends JPanel {
 }
 
 class ClockWindow extends JFrame {
-    public ClockWindow(int pendulum_angle, int pendulum_period, int pendulum_length) {
-        setContentPane(new ClockPane(pendulum_angle, pendulum_period, pendulum_length));
+    public ClockWindow(int pendulum_angle, int pendulum_period) {
+        setContentPane(new ClockPane(pendulum_angle, pendulum_period));
         setTitle("Clock");
     }
 }
