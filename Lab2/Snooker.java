@@ -18,7 +18,7 @@ class Ball{
         this.radius = 10;
         this.speed = Math.random() * 8;
         this.angle = Math.random() * 2 * Math.PI;
-        this.torque = 0.002;
+        this.torque = 0.005;
         this.position_x = Math.random() * (Snooker.WIDTH - 4*radius) + radius;
         this.position_y = Math.random() * (Snooker.HEIGHT - 4*radius) + radius;
     }
@@ -27,7 +27,9 @@ class Ball{
     {
         position_x = position_x + Math.cos(angle) * speed;
         position_y = position_y + Math.sin(angle) * speed;
-        speed = Math.max(0, speed - torque*speed);
+        speed = speed - torque*speed;
+        if(speed <= 0.15)
+            speed = 0;
     }
 
     
@@ -105,13 +107,13 @@ class SnookerPane extends JPanel {
         
         // for left and right
         if (ball.position_x <= 0 || ball.position_x + 2 * ball.radius >= MAX_WIDTH) {
-            ball.angle = Math.PI - ball.angle;                                                      // reverse x axis direction
+            ball.angle = Math.PI - ball.angle;                                                           // reverse x axis direction
             ball.position_x = Math.max(0, Math.min(ball.position_x, MAX_WIDTH - 2 * ball.radius));     // go back inside the bounds
         }
     
         // for up and down
         if (ball.position_y <= 0 || ball.position_y + 2 * ball.radius >= MAX_HEIGHT) {
-            ball.angle = -ball.angle;                                                               // reverse the y axis direction
+            ball.angle = -ball.angle;                                                                    // reverse the y axis direction
             ball.position_y = Math.max(0, Math.min(ball.position_y, MAX_HEIGHT - 2 * ball.radius));    // go back inside the bounds
         }
     }

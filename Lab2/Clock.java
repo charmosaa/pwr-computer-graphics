@@ -40,7 +40,7 @@ class ClockPane extends JPanel {
     ClockPane(int pendulum_angle, int pendulum_period) {
         this.pendulum_angle = pendulum_angle;
         this.pendulum_period = pendulum_period;
-        start_time = (int)System.currentTimeMillis() / 1000;
+        start_time = (int)System.currentTimeMillis();
         setBackground(new Color(200, 200, 255));
         calendar = new GregorianCalendar();
     }
@@ -83,7 +83,7 @@ class ClockPane extends JPanel {
     }
 
     public int getPendulumAngle() {
-        double timeElapsed = (System.currentTimeMillis() / 1000.0) - start_time;
+        double timeElapsed = System.currentTimeMillis() - start_time;
         return (int)(pendulum_angle * Math.cos((2 * Math.PI / pendulum_period) * timeElapsed));
     }
     
@@ -92,18 +92,22 @@ class ClockPane extends JPanel {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
         Dimension size = getSize();
+
+        // seting the necesary parameters
+        ball_radius = size.height / 20;                                       // radius of the ball is always 1/20 of the pane size
         center_x = size.width / 2;
-        center_y = (size.height - 2*ball_radius) / 6;
-        r_outer = Math.min(size.width, (size.height- 2*ball_radius)/3) / 2;
+        center_y = (size.height - ball_radius) / 6;                           // center of the clock's dial
+        r_outer = Math.min(size.width, (size.height - ball_radius)/3) / 2;    // setting the max dial radius
         r_inner = r_outer - TICK_LEN;
         pendulum_length = 4 * center_y;
-        ball_radius = pendulum_length / 10;
+
         Date time = new Date();
         calendar.setTime(time);
         minute = calendar.get(Calendar.MINUTE);
         hour = calendar.get(Calendar.HOUR);
         if (hour > 11) hour = hour - 12;
         second = calendar.get(Calendar.SECOND);
+
         DrawDial(g);
         g2d.setColor(new Color(255, 0, 0));
         g2d.setStroke(new BasicStroke(5));
@@ -114,6 +118,7 @@ class ClockPane extends JPanel {
         g2d.setColor(new Color(0, 0, 0));
         g2d.setStroke(new BasicStroke(1));
         DrawHand(second * 6.0, (int) (0.97 * r_inner), g);
+
         DrawPendulum(g2d, center_x, center_y + r_outer);
     }
 }

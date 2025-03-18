@@ -56,7 +56,7 @@ class SolarPane extends JPanel {
     static int r_sun = 40;                          // sun radius
     static int AU = 150;                            // distance from the sun to the Earth
     static double moon_r_ratio = 0.27;              //moon radius compared to earth
-    static double moon_distance_ratio = 0.18;      //distance from earth to the moon in AU
+    static double moon_distance_ratio = 0.18;       //distance from earth to the moon in AU
 
     ArrayList<Planet> planets = new ArrayList<>();  //planets data
     
