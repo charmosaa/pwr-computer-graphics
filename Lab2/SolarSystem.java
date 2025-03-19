@@ -23,7 +23,7 @@ class Planet {
         orbital_period = Math.sqrt(Math.pow(distance_from_sun, 3)); // kepler's 3rd law
     }
 
-    // simylate the motion
+    // simulate the motion
     public void updatePosition() {
         this.angle -= 0.01 / orbital_period;    // formula for speed for each planet
         if(this.name.equals("Earth"))
@@ -41,7 +41,7 @@ public class SolarSystem {
         
         while (true) {
             try {
-                Thread.sleep(20);
+                Thread.sleep(200);
             } catch (InterruptedException e) {
                 System.out.println("Program interrupted");
             }
@@ -53,8 +53,8 @@ public class SolarSystem {
 class SolarPane extends JPanel {
 
     int center_x, center_y;                         // center of the sun - center of the solar system
-    static int r_sun = 40;                          // sun radius
-    static int AU = 150;                            // distance from the sun to the Earth
+    int r_sun;                          // sun radius
+    int AU;                            // distance from the sun to the Earth
     static double moon_r_ratio = 0.27;              //moon radius compared to earth
     static double moon_distance_ratio = 0.18;       //distance from earth to the moon in AU
 
@@ -64,15 +64,15 @@ class SolarPane extends JPanel {
         
         setBackground(new Color(0, 0, 30));
 
-        // Create planets
+        // create planets
         planets.add(new Planet("Mercury", 0.39, 0.2, Color.GRAY));
         planets.add(new Planet("Venus", 0.72, 0.4, new Color(220, 220,100)));
         planets.add(new Planet("Earth", 1.0, 0.5, Color.BLUE));
-        planets.add(new Planet("Mars", 1.27, 0.3, Color.RED));
+        planets.add(new Planet("Mars", 1.27, 0.35, Color.RED));
         planets.add(new Planet("Jupiter", 1.75, 1.0, Color.ORANGE));
         planets.add(new Planet("Saturn", 2.18, 0.8, new Color(220, 220,150)));
-        planets.add(new Planet("Uranus", 2.48, 0.65, Color.CYAN));
-        planets.add(new Planet("Neptune", 2.72, 0.55, new Color(90,100,255)));
+        planets.add(new Planet("Uranus", 2.5, 0.65, Color.CYAN));
+        planets.add(new Planet("Neptune", 2.75, 0.55, new Color(90,100,255)));
 
     }
 
@@ -103,7 +103,6 @@ class SolarPane extends JPanel {
 
         if(planet.name.equals("Earth"))
             DrawMoon(g, planet, planet_x, planet_y);
-            
     }
     
     public void DrawMoon(Graphics g, Planet earth ,int earth_x, int earth_y) 
@@ -158,6 +157,8 @@ class SolarPane extends JPanel {
         Dimension size = getSize();
         center_x = size.width / 2;
         center_y = (size.height) / 2;
+        r_sun = Math.min(size.height, size.width)/22;
+        AU = Math.min(size.height, size.width)/ 6;
 
         // draw sun
         DrawSun(g);

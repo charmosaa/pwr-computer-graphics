@@ -97,9 +97,9 @@ class ClockPane extends JPanel {
         ball_radius = size.height / 20;                                       // radius of the ball is always 1/20 of the pane size
         center_x = size.width / 2;
         center_y = (size.height - ball_radius) / 6;                           // center of the clock's dial
-        r_outer = Math.min(size.width, (size.height - ball_radius)/3) / 2;    // setting the max dial radius
+        r_outer = Math.min(size.width/2, (size.height - ball_radius)/6) ;    // setting the max dial radius
         r_inner = r_outer - TICK_LEN;
-        pendulum_length = 4 * center_y;
+        pendulum_length = Math.min(4*center_y, (int)(center_x /Math.sin(Math.PI * pendulum_angle / 180.0)));
 
         Date time = new Date();
         calendar.setTime(time);
@@ -119,7 +119,7 @@ class ClockPane extends JPanel {
         g2d.setStroke(new BasicStroke(1));
         DrawHand(second * 6.0, (int) (0.97 * r_inner), g);
 
-        DrawPendulum(g2d, center_x, center_y + r_outer);
+        DrawPendulum(g2d, center_x, center_y - r_outer);
     }
 }
 

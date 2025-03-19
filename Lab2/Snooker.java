@@ -156,7 +156,7 @@ class SnookerPane extends JPanel {
 
                 // now we unrotate to get back 
                 double[] final_pos_ball = unrotateVector(v1f, horizontal_ball[1], theta);
-                double[] final_pos_other = unrotateVector(v2f, horizontal_ball[1], theta);
+                double[] final_pos_other = unrotateVector(v2f, horizontal_other[1], theta);
 
                 // now new angle recalculation
                 ball.angle = Math.atan2(final_pos_ball[1], final_pos_ball[0]);
