@@ -17,92 +17,80 @@ public class PaintDemo {
         SmpWindow wnd = new SmpWindow();
         wnd.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         wnd.setVisible(true);
-        wnd.setBounds(70, 70, 600, 400);
+        wnd.setBounds(70, 70, 800, 400);
         wnd.setTitle("Vector graphics program");
     }
 }
 
-class DrawWndPane extends JPanel implements ActionListener, MouseListener, MouseMotionListener {
+class ControlPanel extends JPanel {
     JButton button, saveVector, loadVector, saveRaster;
     JRadioButton lineButton, rectButton, circleButton;
     ButtonGroup shapeGroup;
-
     JTextField redField, greenField, blueField;
-    
-    int shapeCaught = -1;
-    int pointCaught;
-    String currentShape = "Line";
-    
-    ArrayList<Shape> shapes;
-    ArrayList<Color> shapeColors = new ArrayList<>();
-    
-    DrawWndPane() {
-        super();
-        setLayout(null);
-        setBackground(Color.white);
-        
+
+    public ControlPanel(DrawWndPane drawPane) {
+        setLayout(new FlowLayout());
+
         button = new JButton("Reset");
-        button.setBounds(10, 10, 70, 30);
-        add(button);
-        
+        saveVector = new JButton("Save txt");
+        loadVector = new JButton("Load");
+        saveRaster = new JButton("Save raster");
+
         lineButton = new JRadioButton("Line", true);
         rectButton = new JRadioButton("Rectangle");
         circleButton = new JRadioButton("Circle");
-        
-
-        lineButton.setBounds(240, 320 , 100, 30);
-        rectButton.setBounds(360, 320, 100, 30);
-        circleButton.setBounds(480, 320, 100, 30);
-        
-        add(lineButton);
-        add(rectButton);
-        add(circleButton);
-        
         shapeGroup = new ButtonGroup();
         shapeGroup.add(lineButton);
         shapeGroup.add(rectButton);
         shapeGroup.add(circleButton);
 
-        redField = new JTextField("0");
-        greenField = new JTextField("0");
-        blueField = new JTextField("0");
+        redField = new JTextField("0", 3);
+        greenField = new JTextField("0", 3);
+        blueField = new JTextField("0", 3);
 
-        redField.setBounds(420, 10, 40, 30);
-        greenField.setBounds(470, 10, 40, 30);
-        blueField.setBounds(520, 10, 40, 30);
+        redField.setBackground(Color.red);
+        greenField.setBackground(Color.green);
+        blueField.setBackground(new Color(100,100, 255));
 
-        saveVector = new JButton("Save txt");
-        loadVector = new JButton("Load");
-        saveRaster = new JButton("Save raster");
-
-        saveVector.setBounds(10, 50, 100, 30);
-        loadVector.setBounds(10, 90, 100, 30);
-        saveRaster.setBounds(10, 130, 100, 30);
-
-        saveVector.addActionListener(e -> saveVectorToFile());
-        saveRaster.addActionListener(e-> saveAsImage());
-        loadVector.addActionListener(e -> loadVectorFromFile());
-
-        add(redField);
-        add(greenField);
-        add(blueField);
+        add(button);
         add(saveVector);
-        add(saveRaster);
         add(loadVector);
+        add(saveRaster);
+        add(lineButton);
+        add(rectButton);
+        add(circleButton);
+        add(new JLabel("R:"));
+        add(redField);
+        add(new JLabel("G:"));
+        add(greenField);
+        add(new JLabel("B:"));
+        add(blueField);
 
-        //applyColorButton.addActionListener(e -> updateShapeColor());
-                
-        shapes = new ArrayList<>();
-        
-        button.addActionListener(this);
+        // Add actions
+        button.addActionListener(e -> drawPane.actionPerformed(e));
+        saveVector.addActionListener(e -> drawPane.saveVectorToFile());
+        loadVector.addActionListener(e -> drawPane.loadVectorFromFile());
+        saveRaster.addActionListener(e -> drawPane.saveAsImage());
+
+        lineButton.addActionListener(e -> drawPane.setCurrentShape("Line"));
+        rectButton.addActionListener(e -> drawPane.setCurrentShape("Rectangle"));
+        circleButton.addActionListener(e -> drawPane.setCurrentShape("Circle"));
+    }
+}
+
+class DrawWndPane extends JPanel implements MouseListener, MouseMotionListener {
+    private String currentShape = "Line";
+    private ArrayList<Shape> shapes = new ArrayList<>();
+    private ArrayList<Color> shapeColors = new ArrayList<>();
+    private int shapeCaught = -1, pointCaught;
+    private ControlPanel controlPanel;
+
+    public DrawWndPane() {
+        setBackground(Color.white);
         addMouseListener(this);
         addMouseMotionListener(this);
-        
-        lineButton.addActionListener(e -> currentShape = "Line");
-        rectButton.addActionListener(e -> currentShape = "Rectangle");
-        circleButton.addActionListener(e -> currentShape = "Circle");
     }
-    
+
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
@@ -119,7 +107,11 @@ class DrawWndPane extends JPanel implements ActionListener, MouseListener, Mouse
         g2d.setPaintMode();
     }
 
-    private void loadVectorFromFile() {
+    public void setCurrentShape(String shape) {
+        this.currentShape = shape;
+    }
+
+    public void loadVectorFromFile() {
         shapes.clear();
         shapeColors.clear();
         
@@ -147,11 +139,11 @@ class DrawWndPane extends JPanel implements ActionListener, MouseListener, Mouse
             repaint();
             JOptionPane.showMessageDialog(null, "Vector image loaded!");
         } catch (FileNotFoundException e) {
-            JOptionPane.showMessageDialog(null, e.getMessage());
+            JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         } 
     }
 
-    private void saveVectorToFile() {
+    public void saveVectorToFile() {
         try (PrintWriter writer = new PrintWriter(new File("Lab3/Assets/vector_image.txt"))) {
             for (int i = 0; i < shapes.size(); i++) {
                 Shape shape = shapes.get(i);
@@ -173,11 +165,11 @@ class DrawWndPane extends JPanel implements ActionListener, MouseListener, Mouse
             }
             JOptionPane.showMessageDialog(null, "Vector image saved!");
         } catch (FileNotFoundException e) {
-            JOptionPane.showMessageDialog(null, e.getMessage());
+            JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
     
-    private void saveAsImage() {
+    public void saveAsImage() {
         BufferedImage image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = image.createGraphics();
         
@@ -189,12 +181,9 @@ class DrawWndPane extends JPanel implements ActionListener, MouseListener, Mouse
             ImageIO.write(image, "PNG", file);
             JOptionPane.showMessageDialog(null, "Image saved!");
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, e.getMessage());
+            JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
-    }
-    
-
-    
+    }    
 
     private boolean CatchClosePoint( double  x, double y )
    {
@@ -354,15 +343,13 @@ class DrawWndPane extends JPanel implements ActionListener, MouseListener, Mouse
                 circ.y = center.getY() - radius;
             }
         }
-    }
-        
-    
+    }    
 
     private Color getCurrentColor() {
         try {
-            int r = Integer.parseInt(redField.getText());
-            int g = Integer.parseInt(greenField.getText());
-            int b = Integer.parseInt(blueField.getText());
+            int r = Integer.parseInt(controlPanel.redField.getText());
+            int g = Integer.parseInt(controlPanel.greenField.getText());
+            int b = Integer.parseInt(controlPanel.blueField.getText());
 
             r = Math.max(0, Math.min(255, r));
             g = Math.max(0, Math.min(255, g));
@@ -399,6 +386,11 @@ class DrawWndPane extends JPanel implements ActionListener, MouseListener, Mouse
         Shape shape = shapes.get( shapeCaught );     
         g2d.draw( shape );
         shapeCaught = -1;
+    }
+
+    public void setControlPanel(ControlPanel controlPanel)
+    {
+        this.controlPanel = controlPanel;
     }
     
 
@@ -460,15 +452,13 @@ class DrawWndPane extends JPanel implements ActionListener, MouseListener, Mouse
 
 class SmpWindow extends JFrame {
     public SmpWindow() {
-        Container contents = getContentPane();
-        contents.add(new DrawWndPane());
+        setLayout(new BorderLayout());
+
+        DrawWndPane drawPane = new DrawWndPane();
+        ControlPanel controlPanel = new ControlPanel(drawPane); 
+        drawPane.setControlPanel(controlPanel);
+
+        add(controlPanel, BorderLayout.SOUTH);
+        add(drawPane, BorderLayout.CENTER);
     }
 }
-
-
-
-
-
-
-
-
