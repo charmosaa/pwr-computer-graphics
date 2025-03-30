@@ -17,15 +17,18 @@ public class PaintDemo {
 }
 
 class DrawWndPane extends JPanel implements ActionListener, MouseListener, MouseMotionListener {
-    JButton button;
+    JButton button, applyColorButton;
     JRadioButton lineButton, rectButton, circleButton;
     ButtonGroup shapeGroup;
+
+    JTextField redField, greenField, blueField;
     
     int shapeCaught = -1;
     int pointCaught;
     String currentShape = "Line";
     
     ArrayList<Shape> shapes;
+    ArrayList<Color> shapeColors = new ArrayList<>();
     
     DrawWndPane() {
         super();
@@ -40,9 +43,10 @@ class DrawWndPane extends JPanel implements ActionListener, MouseListener, Mouse
         rectButton = new JRadioButton("Rectangle");
         circleButton = new JRadioButton("Circle");
         
-        lineButton.setBounds(100, 10, 80, 30);
-        rectButton.setBounds(200, 10, 100, 30);
-        circleButton.setBounds(320, 10, 80, 30);
+
+        lineButton.setBounds(240, 320 , 100, 30);
+        rectButton.setBounds(360, 320, 100, 30);
+        circleButton.setBounds(480, 320, 100, 30);
         
         add(lineButton);
         add(rectButton);
@@ -52,7 +56,26 @@ class DrawWndPane extends JPanel implements ActionListener, MouseListener, Mouse
         shapeGroup.add(lineButton);
         shapeGroup.add(rectButton);
         shapeGroup.add(circleButton);
-        
+
+        redField = new JTextField("0");
+        greenField = new JTextField("0");
+        blueField = new JTextField("0");
+
+        redField.setBounds(420, 10, 40, 30);
+        greenField.setBounds(470, 10, 40, 30);
+        blueField.setBounds(520, 10, 40, 30);
+
+        applyColorButton = new JButton("Set Color");
+        applyColorButton.setBounds(420, 50, 140, 30);
+
+        add(redField);
+        add(greenField);
+        add(blueField);
+        add(applyColorButton);
+
+        //applyColorButton.addActionListener(e -> updateShapeColor());
+
+                
         shapes = new ArrayList<>();
         
         button.addActionListener(this);
@@ -68,12 +91,13 @@ class DrawWndPane extends JPanel implements ActionListener, MouseListener, Mouse
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
         g2d.setColor(Color.black);
-        
-        g2d.setColor( Color.black );       
-        g2d.setXORMode( Color.red );  
+          
+        g2d.setXORMode( Color.white );  
 
-        for (Shape s : shapes) {
-            g2d.draw(s);
+        for (int i =0; i< shapes.size();i++)
+        {
+            g2d.setColor(shapeColors.get(i));    
+            g2d.draw(shapes.get(i)); 
         }
 
         g2d.setPaintMode();
@@ -167,9 +191,8 @@ class DrawWndPane extends JPanel implements ActionListener, MouseListener, Mouse
            Graphics g = getGraphics();
            Graphics2D  g2d = (Graphics2D)g;   	 
         
-           //g2d.setXORMode( getBackground() );
-           g2d.setXORMode( new Color( 255,255,255) );  
-           g2d.setXORMode( Color.red );           
+           g2d.setXORMode( getBackground() );
+           g2d.setColor(shapeColors.get(shapeCaught));
  
             Line2D.Double  line;
             line = (Line2D.Double) shapes.get( shapeCaught );
@@ -214,7 +237,8 @@ class DrawWndPane extends JPanel implements ActionListener, MouseListener, Mouse
             
             //g2d.setXORMode( getBackground() );
             g2d.setXORMode( new Color( 255,255,255) );  
-            g2d.setXORMode( Color.red );           
+            g2d.setColor(shapeColors.get(shapeCaught));
+            //g2d.setXORMode( Color.red );           
 
             Rectangle2D.Double  rect;
             rect = (Rectangle2D.Double) shapes.get( shapeCaught );
@@ -261,9 +285,8 @@ class DrawWndPane extends JPanel implements ActionListener, MouseListener, Mouse
             Graphics g = getGraphics();
             Graphics2D  g2d = (Graphics2D)g;   	 
             
-            //g2d.setXORMode( getBackground() );
-            g2d.setXORMode( new Color( 255,255,255) );  
-            g2d.setXORMode( Color.red );           
+            g2d.setXORMode( new Color( 255,255,255) );       
+            g2d.setColor(shapeColors.get(shapeCaught));
 
             Ellipse2D.Double  circ;
             circ = (Ellipse2D.Double) shapes.get( shapeCaught );
@@ -296,6 +319,48 @@ class DrawWndPane extends JPanel implements ActionListener, MouseListener, Mouse
         }   
     }
 
+    private Color getCurrentColor() {
+        try {
+            int r = Integer.parseInt(redField.getText());
+            int g = Integer.parseInt(greenField.getText());
+            int b = Integer.parseInt(blueField.getText());
+
+            r = Math.max(0, Math.min(255, r));
+            g = Math.max(0, Math.min(255, g));
+            b = Math.max(0, Math.min(255, b));
+
+            return new Color(r,g,b);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Please enter valid RGB values (0-255)", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+        return Color.BLACK; //black as default
+    }
+
+    private Point2D getShapeCenter(Shape shape) {
+        if (shape instanceof Line2D) {
+            Line2D line = (Line2D) shape;
+            return new Point2D.Double((line.getX1() + line.getX2()) / 2, (line.getY1() + line.getY2()) / 2);
+        } else if (shape instanceof Rectangle2D) {
+            Rectangle2D rect = (Rectangle2D) shape;
+            return new Point2D.Double(rect.getX() + rect.getWidth() / 2, rect.getY() + rect.getHeight() / 2);
+        } else if (shape instanceof Ellipse2D) {
+            Ellipse2D circle = (Ellipse2D) shape;
+            return new Point2D.Double(circle.getX() + circle.getWidth() / 2, circle.getY() + circle.getHeight() / 2);
+        }
+        return new Point2D.Double(0, 0);
+    }
+
+    public void removeShape()
+    {
+        Graphics g = getGraphics();
+        Graphics2D  g2d = (Graphics2D)g;   	 
+            
+        g2d.setXORMode( new Color( 255,255,255) );       
+        g2d.setColor(shapeColors.get(shapeCaught));
+        Shape shape = shapes.get( shapeCaught );     
+        g2d.draw( shape );
+        shapeCaught = -1;
+    }
     
 
     public void actionPerformed(ActionEvent event) {
@@ -311,8 +376,11 @@ class DrawWndPane extends JPanel implements ActionListener, MouseListener, Mouse
                 Point2D center = getShapeCenter(shape);
                 
                 if (center.distance(e.getX(), e.getY()) < 10) { 
+                    shapeCaught = i;
+                    removeShape();
                     shapes.remove(i);
-                    repaint();
+                    shapeColors.remove(i);
+                    //repaint();
                     return;
                 }
             }
@@ -336,24 +404,11 @@ class DrawWndPane extends JPanel implements ActionListener, MouseListener, Mouse
                     default -> {
                     }
                 }
-            shapeCaught = shapes.size() - 1;
-            pointCaught = 1;
+                shapeCaught = shapes.size() - 1;
+                shapeColors.add(getCurrentColor()); 
+                pointCaught = 1;
             }
         }
-    }
-
-    private Point2D getShapeCenter(Shape shape) {
-        if (shape instanceof Line2D) {
-            Line2D line = (Line2D) shape;
-            return new Point2D.Double((line.getX1() + line.getX2()) / 2, (line.getY1() + line.getY2()) / 2);
-        } else if (shape instanceof Rectangle2D) {
-            Rectangle2D rect = (Rectangle2D) shape;
-            return new Point2D.Double(rect.getX() + rect.getWidth() / 2, rect.getY() + rect.getHeight() / 2);
-        } else if (shape instanceof Ellipse2D) {
-            Ellipse2D circle = (Ellipse2D) shape;
-            return new Point2D.Double(circle.getX() + circle.getWidth() / 2, circle.getY() + circle.getHeight() / 2);
-        }
-        return new Point2D.Double(0, 0);
     }
     
     
@@ -388,6 +443,9 @@ class SmpWindow extends JFrame {
         contents.add(new DrawWndPane());
     }
 }
+
+
+
 
 
 
