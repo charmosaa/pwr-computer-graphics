@@ -29,7 +29,8 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
-        g2d.setColor(Color.black);
+        g2d.setColor(Color.red);
+        g2d.fillRect(100, 50, 200, 100);
           
         g2d.setXORMode( Color.white );  
 
@@ -96,7 +97,7 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Save Vector Image");
     
-        // Set default file name
+        // default file name
         fileChooser.setSelectedFile(new File("vector_image.txt"));
     
         int userSelection = fileChooser.showSaveDialog(null);
@@ -134,13 +135,12 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
             }
         }
     }
-    
- 
+     
     public void saveAsImage() {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Save Image As");
 
-        // Set default file name
+        // default file name
         fileChooser.setSelectedFile(new File("image.png"));
 
         int userSelection = fileChooser.showSaveDialog(null);
@@ -171,6 +171,8 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
    {
        for ( int i = 0; i < shapes.size(); i++ )
        {
+            Point2D center = getShapeCenter(shapes.get(i));
+
             if(shapes.get( i ) instanceof Line2D.Double){
                 Line2D.Double line;
                 line = (Line2D.Double)shapes.get(i);
@@ -214,9 +216,7 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
                     return true;
                 }   
                 // middle
-                double xc = rect.x + rect.width/2;
-                double yc = rect.y + rect.height/2;    	   
-                if ( (Math.abs( xc - x) < 10) && (Math.abs( yc - y) < 10) )
+                if (center.distance(x,y) < 10)
                 {
                     shapeCaught = i;
                     pointCaught = 2;
@@ -226,18 +226,15 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
             else if(shapes.get( i ) instanceof Ellipse2D.Double){
                 Ellipse2D.Double circ = (Ellipse2D.Double)shapes.get(i);
 
-                double xc = circ.x + circ.width/2;
-                double yc = circ.y + circ.height/2;    
-
                 // middle 	   
-                if ( (Math.abs( xc - x) < 10) && (Math.abs( yc - y) < 10) )
+                if ( center.distance(x,y) < 10 )
                 {
                     shapeCaught = i;
                     pointCaught = 0;
                     return true;
                 }    	
                 // perimeter   
-                if ( Math.abs(Math.sqrt(  Math.abs(xc- x) * Math.abs(xc - x) + Math.abs(yc - y) * Math.abs(yc - y)) - circ.height/2 )< 10 )
+                if ( Math.abs(center.distance(x,y) - circ.height/2) < 10 )
                 {
                     shapeCaught = i;
                     pointCaught = 1;
@@ -298,10 +295,10 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
                 rect.y = y;
             }
             case 1 -> { // bottom-right corner
-                rect.width = Math.abs(rect.x - x);
-                rect.height = Math.abs(rect.y - y);
                 rect.x = Math.min(rect.x, x);
                 rect.y = Math.min(rect.y, y);
+                rect.width = Math.abs(rect.x - x);
+                rect.height = Math.abs(rect.y - y);                
             }
             case 2 -> { // center - moving 
                 Point2D center = getShapeCenter(rect);
