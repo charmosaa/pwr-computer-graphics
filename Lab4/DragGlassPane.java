@@ -43,10 +43,10 @@ public class DragGlassPane extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
+        float alpha = 0.7f;
+        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
 
         if (draggedImage != null && location != null) {
-            float alpha = 0.7f;
-            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
             g2d.drawImage(draggedImage, location.x - 50, location.y - 50, 100, 100, this);
         }
         else if (draggedShape != null) {
@@ -59,7 +59,6 @@ public class DragGlassPane extends JPanel {
             } else {
                 shapeToDraw = draggedShape;
             }
-
             g2d.fill(shapeToDraw);
         }
     }

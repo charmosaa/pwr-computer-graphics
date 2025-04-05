@@ -51,7 +51,7 @@ public class ControlPanel extends JPanel {
         add(blueField);
 
         // Add actions
-        button.addActionListener(e -> drawPane.actionPerformed(e));
+        button.addActionListener(e -> drawPane.removeAction(e));
         saveVector.addActionListener(e -> drawPane.saveVectorToFile());
         loadVector.addActionListener(e -> drawPane.loadVectorFromFile());
         saveRaster.addActionListener(e -> drawPane.saveAsImage());

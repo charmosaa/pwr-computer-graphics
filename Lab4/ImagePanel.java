@@ -91,7 +91,7 @@ public class ImagePanel extends JPanel implements MouseListener, MouseMotionList
     public void mouseReleased(MouseEvent e) {
         if (draggedImage != null && drawPane != null) {
             Point dropPoint = SwingUtilities.convertPoint(this, e.getPoint(), drawPane);
-            drawPane.dropImage(draggedImage, dropPoint.x - IMAGE_SIZE/2, dropPoint.y - IMAGE_SIZE/2);
+            drawPane.dropImage(draggedImage, dropPoint.x - IMAGE_SIZE/2, dropPoint.y - IMAGE_SIZE/2, IMAGE_SIZE, IMAGE_SIZE);
         }
     
         // clear the temp view 

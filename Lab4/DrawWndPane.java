@@ -22,13 +22,14 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
     private ArrayList<DroppedImage> images = new ArrayList<>();
     private ArrayList<Shape> shapes = new ArrayList<>();
 
-    public void dropImage(BufferedImage img, int x, int y) {
-        images.add(new DroppedImage(img, x, y));
+    public void dropImage(BufferedImage img, int x, int y, int width, int height) {
+        images.add(new DroppedImage(img, x, y, width, height));
         repaint();
     }
 
     public void dropShape(Shape shape) {
         shapes.add(shape);
+        shapeColors.add(getCurrentColor());
         repaint();
     }
 
@@ -40,10 +41,12 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
         
 
         for (DroppedImage d : images) {
-            g.drawImage(d.image, d.x, d.y, 100, 100, this);
+            g.drawImage(d.image, d.x, d.y, d.width, d.height, this);
         }
 
-        for (Shape s : shapes){
+        for (int i=0;i<shapes.size();i++){
+            Shape s = shapes.get(i);
+            g2d.setColor(shapeColors.get(i));
             if(s instanceof Rectangle2D.Double)
             {
                 Rectangle2D.Double rect = (Rectangle2D.Double)s;
@@ -59,12 +62,14 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
 
     private static class DroppedImage {
         BufferedImage image;
-        int x, y;
+        int x, y, width, height;
 
-        public DroppedImage(BufferedImage image, int x, int y) {
+        public DroppedImage(BufferedImage image, int x, int y, int width, int height) {
             this.image = image;
             this.x = x;
             this.y = y;
+            this.width = width;
+            this.height = height;
         }
     }
 
@@ -75,22 +80,6 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
         addMouseMotionListener(this);
     }
 
-    // public void paintComponent(Graphics g) {
-    //     super.paintComponent(g);
-    //     Graphics2D g2d = (Graphics2D) g;
-    //     // g2d.setColor(Color.red);
-    //     // g2d.fillRect(100, 50, 200, 100);
-          
-    //     g2d.setXORMode( Color.white );  
-
-    //     for (int i =0; i< shapes.size();i++)
-    //     {
-    //         g2d.setColor(shapeColors.get(i));    
-    //         g2d.draw(shapes.get(i)); 
-    //     }
-
-    //     g2d.setPaintMode();
-    // }
 
     public void setCurrentShape(String shape) {
         this.currentShape = shape;
@@ -222,32 +211,7 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
        {
             Point2D center = getShapeCenter(shapes.get(i));
 
-            if(shapes.get( i ) instanceof Line2D.Double){
-                Line2D.Double line;
-                line = (Line2D.Double)shapes.get(i);
-
-                if ( (Math.abs( line.x1 - x) < 10) && (Math.abs( line.y1 - y) < 10) )
-                {
-                    shapeCaught = i;
-                    pointCaught = 0;
-                    return true;
-                }    	   
-                if ( (Math.abs( line.x2 - x) < 10) && (Math.abs( line.y2 - y) < 10) )
-                {
-                    shapeCaught = i;
-                    pointCaught = 1;
-                    return true;
-                }   
-                double xc = 0.5 * (line.x1 + line.x2);
-                double yc = 0.5 * (line.y1 + line.y2);    	   
-                if ( (Math.abs( xc - x) < 10) && (Math.abs( yc - y) < 10) )
-                {
-                    shapeCaught = i;
-                    pointCaught = 2;
-                    return true;
-                }   
-            } 
-            else if (shapes.get( i ) instanceof Rectangle2D.Double){
+            if (shapes.get( i ) instanceof Rectangle2D.Double){
                 Rectangle2D.Double rect = (Rectangle2D.Double)shapes.get(i);
 
                 // top left
@@ -391,10 +355,7 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
     }
 
     private Point2D getShapeCenter(Shape shape) {
-        if (shape instanceof Line2D) {
-            Line2D line = (Line2D) shape;
-            return new Point2D.Double((line.getX1() + line.getX2()) / 2, (line.getY1() + line.getY2()) / 2);
-        } else if (shape instanceof Rectangle2D) {
+        if (shape instanceof Rectangle2D) {
             Rectangle2D rect = (Rectangle2D) shape;
             return new Point2D.Double(rect.getX() + rect.getWidth() / 2, rect.getY() + rect.getHeight() / 2);
         } else if (shape instanceof Ellipse2D) {
@@ -404,32 +365,30 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
         return new Point2D.Double(0, 0);
     }
 
-    public void removeShape()
-    {
-        Graphics g = getGraphics();
-        Graphics2D  g2d = (Graphics2D)g;   	 
-            
-        g2d.setXORMode( new Color( 255,255,255) );       
-        g2d.setColor(shapeColors.get(shapeCaught));
-        Shape shape = shapes.get( shapeCaught );     
-        g2d.draw( shape );
-        shapeCaught = -1;
-    }
-
     public void setControlPanel(ControlPanel controlPanel)
     {
         this.controlPanel = controlPanel;
     }
     
 
-    public void actionPerformed(ActionEvent event) {
+    public void removeShape()
+    {
+        shapes.remove(shapeCaught);
+        shapeColors.remove(shapeCaught);
+        repaint();
+    }
+
+    public void removeAction(ActionEvent event) {
         shapes.clear();
+        shapeColors.clear();
+        images.clear();
         repaint();
     }
     
     public void mousePressed(MouseEvent e) {
         if (SwingUtilities.isRightMouseButton(e)) {
 
+            // for clicking in the center of the shape
             for (int i = 0; i < shapes.size(); i++) {
                 Shape shape = shapes.get(i);
                 Point2D center = getShapeCenter(shape);
@@ -437,12 +396,22 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
                 if (center.distance(e.getX(), e.getY()) < 10) { 
                     shapeCaught = i;
                     removeShape();
-                    shapes.remove(i);
-                    shapeColors.remove(i);
                     return;
                 }
             }
-        } else {
+
+            // for clicking inside the image
+            for (int i = 0; i < images.size(); i++) {
+                DroppedImage image = images.get(i);
+                Rectangle2D.Double imageBounds = new Rectangle2D.Double(image.x, image.y, 100, 100); // Image is 100x100
+                if (imageBounds.contains(e.getPoint())) {
+                    images.remove(i);
+                    repaint();
+                    return;
+                }
+            }
+        } 
+        else {
             if (CatchClosePoint(e.getX(),e.getY()))
                 updateShapePosition(e.getX(), e.getY());
                 
