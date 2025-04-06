@@ -6,6 +6,8 @@ import javax.swing.*;
 public class ControlPanel extends JPanel {
     JButton button, saveVector, loadVector, saveRaster, moveLeft, moveRight, moveUp, moveDown, rotLeft, rotRight;
     JTextField redField, greenField, blueField;
+    JRadioButton rotateButton, resizeButton;
+    ButtonGroup reGroup;
     DrawWndPane drawPane;
 
     public ControlPanel(DrawWndPane drawPane) {
@@ -21,8 +23,14 @@ public class ControlPanel extends JPanel {
         moveRight = new JButton("Right");
         moveDown = new JButton("Down");
 
+        rotateButton = new JRadioButton("Rotate", true);
+        resizeButton = new JRadioButton("Resize");
+        reGroup = new ButtonGroup();
+        reGroup.add(rotateButton);
+        reGroup.add(resizeButton);
+
         rotLeft = new JButton("Anticlockwise");
-        rotRight = new JButton("clockwise");
+        rotRight = new JButton("Clockwise");
 
         redField = new JTextField("0", 3);
         greenField = new JTextField("0", 3);
@@ -48,6 +56,8 @@ public class ControlPanel extends JPanel {
 
         // second row panel
         JPanel row2 = new JPanel(new FlowLayout());
+        row2.add(rotateButton);
+        row2.add(resizeButton);
         row2.add(new JLabel("Rotate:"));
         row2.add(rotLeft);
         row2.add(rotRight);
@@ -72,5 +82,8 @@ public class ControlPanel extends JPanel {
 
         rotLeft.addActionListener(e -> drawPane.rotItem(false));
         rotRight.addActionListener(e -> drawPane.rotItem(true));
+
+        rotateButton.addActionListener(e -> drawPane.setRotateMode(true));
+        resizeButton.addActionListener(e -> drawPane.setRotateMode(false));
     }
 }

@@ -2,6 +2,7 @@ package Lab4;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import javax.swing.*;
 public class DrawWndPane extends JPanel implements MouseListener, MouseMotionListener {
     private int itemCaught = -1, pointCaught, lastMouseX,lastMouseY;
     private ArrayList<DrawableItem> items = new ArrayList<>();
+    boolean isRotateMode = true;
     
     private ControlPanel controlPanel;
     private Graphics2D g2d;
@@ -46,6 +48,10 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
     
     public void setControlPanel(ControlPanel controlPanel){
         this.controlPanel = controlPanel;
+    }
+
+    void setRotateMode(boolean rotate){
+        isRotateMode = rotate;
     }
     
 
@@ -87,18 +93,26 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
     {
         for ( int i = 0; i < items.size(); i++ )
         {
-            Point center = new Point((int)items.get(i).getCenterX(), (int)items.get(i).getCenterY());
-            if(center.distance(x, y) < 10)
+            DrawableItem item = items.get(i);
+            Point center = new Point((int)item.getCenterX(), (int)item.getCenterY());
+            Point currentPoint = new Point(x,y);
+
+            if(center.distance(currentPoint) < 10)
             {
-                itemCaught = i;
+                items.add(item);
+                items.remove(i);
+                itemCaught = items.size()-1;
                 pointCaught = 0;
                 return true;
             }
-            else if (items.get(i).contains(new Point(x,y))){
-                itemCaught = i;
-                pointCaught = 1;
+            if(item.getClosestCorner(currentPoint, 10) >= 0){
+                items.add(item);
+                items.remove(i);
+                itemCaught = items.size()-1;
+                pointCaught = item.getClosestCorner(currentPoint, 10) + 2 ;
                 return true;
-            } 
+            }
+            
                 
         }
         return false;
@@ -169,18 +183,89 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
     
     
     public void mouseDragged(MouseEvent e) {
-        if (itemCaught >= 0 && pointCaught == 0) {
-            double dx = e.getX() - lastMouseX;
-            double dy = e.getY() - lastMouseY;
-    
-            items.get(itemCaught).translate(dx, dy);
+        if (itemCaught >= 0) {
+            DrawableItem item = items.get(itemCaught);
+            if (pointCaught == 0) { // Center drag - move
+                double dx = e.getX() - lastMouseX;
+                double dy = e.getY() - lastMouseY;
+                item.translate(dx, dy);
+            }
+            else if (pointCaught >= 2 ) { // Corner drag - rotate
+                if(isRotateMode)
+                {  
+                    double centerX = item.getCenterX();
+                    double centerY = item.getCenterY();
+                    
+                    // calculate angle change
+                    double prevAngle = Math.atan2(lastMouseY - centerY, lastMouseX - centerX);
+                    double currAngle = Math.atan2(e.getY() - centerY, e.getX() - centerX);
+                    double angleDiff = Math.toDegrees(currAngle - prevAngle);
+                    
+                    item.rotate(angleDiff);
+                }
+                else{
+                    System.out.println("resize mode");
+                     // Resize logic
+                    double centerX = item.getCenterX();
+                    double centerY = item.getCenterY();
+                    
+                    // Get the original untransformed bounds
+                    Rectangle2D originalBounds = item.getOriginalShape().getBounds2D();
+                    double origWidth = originalBounds.getWidth();
+                    double origHeight = originalBounds.getHeight();
+                    
+                    // Calculate mouse movement since last position
+                    double dx = e.getX() - lastMouseX;
+                    double dy = e.getY() - lastMouseY;
+                    
+                    // Determine scaling direction based on which corner is dragged
+                    double sx = 1.0, sy = 1.0;
+                    double scaleFactor = 0.01; // Sensitivity adjustment
+                    
+                    switch (pointCaught - 2) {
+                        case 0: // Top-left
+                            sx = 1.0 - dx * scaleFactor;
+                            sy = 1.0 - dy * scaleFactor;
+                            break;
+                        case 1: // Top-right
+                            sx = 1.0 + dx * scaleFactor;
+                            sy = 1.0 - dy * scaleFactor;
+                            break;
+                        case 2: // Bottom-right
+                            sx = 1.0 + dx * scaleFactor;
+                            sy = 1.0 + dy * scaleFactor;
+                            break;
+                        case 3: // Bottom-left
+                            sx = 1.0 - dx * scaleFactor;
+                            sy = 1.0 + dy * scaleFactor;
+                            break;
+                    }
+                    
+                    // Apply minimum scaling limit
+                    sx = Math.max(0.1, Math.min(sx, 10.0));
+                    sy = Math.max(0.1, Math.min(sy, 10.0));
+                    
+                    // Reset transform and apply new scaling
+                    AffineTransform newTransform = new AffineTransform();
+                    newTransform.translate(centerX, centerY);
+                    newTransform.scale(sx, sy);
+                    newTransform.translate(-centerX, -centerY);
+                    newTransform.concatenate(item.getTransform());
+                    
+                    item.setTransform(newTransform);
+                }
+                
+            }
             lastMouseX = e.getX();
             lastMouseY = e.getY();
     
             repaint();
         }
     }
-    
+    private Point2D getOppositeCorner(int cornerIndex) {
+        // Returns the corner opposite to the given index
+        return items.get(itemCaught).getCorners()[(cornerIndex + 2) % 4];
+    }
     
     public void mouseReleased(MouseEvent e) {
         pointCaught = -1;

@@ -40,17 +40,10 @@ public class ShapesPanel extends JPanel implements MouseListener, MouseMotionLis
     
     public void mousePressed(MouseEvent e) {
         if (rect.contains(e.getPoint())) 
-        {
             draggedShape = rect;
-            System.out.println("rect");
-
-        }   
 
         else if(circ.contains(e.getPoint()))
-        {
             draggedShape = circ;
-            System.out.println("circ");
-        }   
     }
     
     

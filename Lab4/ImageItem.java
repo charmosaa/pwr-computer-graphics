@@ -10,14 +10,14 @@ public class ImageItem extends DrawableItem {
 
     public ImageItem(BufferedImage image, int x, int y, int width, int height) {
         this.image = image;
-        this.originalBounds = new Rectangle2D.Double(0, 0, width, height); // Start at (0,0)
+        this.originalBounds = new Rectangle2D.Double(0, 0, width, height);
         this.transform = new AffineTransform();
-        this.transform.translate(x, y); // Initial position set via transform
+        this.transform.translate(x, y); 
     }
 
     @Override
     public void draw(Graphics2D g2d) {
-        AffineTransform oldTransform = g2d.getTransform();
+        AffineTransform def_transform = g2d.getTransform();
         g2d.transform(transform);
         g2d.drawImage(image, 
                      (int)originalBounds.getX(), 
@@ -25,7 +25,7 @@ public class ImageItem extends DrawableItem {
                      (int)originalBounds.getWidth(), 
                      (int)originalBounds.getHeight(), 
                      null);
-        g2d.setTransform(oldTransform);
+        g2d.setTransform(def_transform);
     }
 
     @Override
