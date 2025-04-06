@@ -4,7 +4,7 @@ import java.awt.*;
 import javax.swing.*;
 
 public class ControlPanel extends JPanel {
-    JButton button, saveVector, loadVector, saveRaster, moveLeft, moveRight, moveUp, moveDown;
+    JButton button, saveVector, loadVector, saveRaster, moveLeft, moveRight, moveUp, moveDown, rotLeft, rotRight;
     JTextField redField, greenField, blueField;
     DrawWndPane drawPane;
 
@@ -21,6 +21,9 @@ public class ControlPanel extends JPanel {
         moveRight = new JButton("Right");
         moveDown = new JButton("Down");
 
+        rotLeft = new JButton("Anticlockwise");
+        rotRight = new JButton("clockwise");
+
         redField = new JTextField("0", 3);
         greenField = new JTextField("0", 3);
         blueField = new JTextField("0", 3);
@@ -31,7 +34,7 @@ public class ControlPanel extends JPanel {
 
         setLayout(new GridLayout(2, 1)); // two rows
 
-        // First row panel
+        // first row panel
         JPanel row1 = new JPanel(new FlowLayout());
         row1.add(button);
         row1.add(saveVector);
@@ -43,21 +46,22 @@ public class ControlPanel extends JPanel {
         row1.add(moveRight);
         row1.add(moveDown);
 
-        // Second row panel
+        // second row panel
         JPanel row2 = new JPanel(new FlowLayout());
-        row2.add(new JLabel("R:"));
+        row2.add(new JLabel("Rotate:"));
+        row2.add(rotLeft);
+        row2.add(rotRight);
+        row2.add(new JLabel("Color:"));
         row2.add(redField);
-        row2.add(new JLabel("G:"));
         row2.add(greenField);
-        row2.add(new JLabel("B:"));
         row2.add(blueField);
 
         add(row1);
         add(row2);
 
-        // Add actions
+        // adding actions
         button.addActionListener(e -> drawPane.removeAction(e));
-        saveVector.addActionListener(e -> drawPane.saveVectorToFile());
+        //saveVector.addActionListener(e -> drawPane.saveVectorToFile());
         loadVector.addActionListener(e -> drawPane.loadVectorFromFile());
         saveRaster.addActionListener(e -> drawPane.saveAsImage());
 
@@ -65,5 +69,8 @@ public class ControlPanel extends JPanel {
         moveUp.addActionListener(e -> drawPane.moveItem("Up"));
         moveRight.addActionListener(e -> drawPane.moveItem("Right"));
         moveDown.addActionListener(e -> drawPane.moveItem("Down"));
+
+        rotLeft.addActionListener(e -> drawPane.rotItem(false));
+        rotRight.addActionListener(e -> drawPane.rotItem(true));
     }
 }

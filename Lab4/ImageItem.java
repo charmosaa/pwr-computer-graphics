@@ -1,27 +1,40 @@
 package Lab4;
 
 import java.awt.*;
+import java.awt.geom.*;
 import java.awt.image.BufferedImage;
 
-public class ImageItem implements DrawableItem {
-    BufferedImage image;
-    int x, y, width, height;
+public class ImageItem extends DrawableItem {
+    private BufferedImage image;
+    private Rectangle2D originalBounds;
 
-    ImageItem(BufferedImage image, int x, int y, int width, int height) {
+    public ImageItem(BufferedImage image, int x, int y, int width, int height) {
         this.image = image;
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
+        this.originalBounds = new Rectangle2D.Double(0, 0, width, height); // Start at (0,0)
+        this.transform = new AffineTransform();
+        this.transform.translate(x, y); // Initial position set via transform
     }
 
     @Override
     public void draw(Graphics2D g2d) {
-        g2d.drawImage(image, x, y, width, height, null);
+        AffineTransform oldTransform = g2d.getTransform();
+        g2d.transform(transform);
+        g2d.drawImage(image, 
+                     (int)originalBounds.getX(), 
+                     (int)originalBounds.getY(), 
+                     (int)originalBounds.getWidth(), 
+                     (int)originalBounds.getHeight(), 
+                     null);
+        g2d.setTransform(oldTransform);
     }
 
     @Override
-    public boolean contains(Point p) {
-        return new Rectangle(x, y, width, height).contains(p);
+    public Shape getOriginalShape() {
+        return new Rectangle2D.Double(
+            originalBounds.getX(),
+            originalBounds.getY(),
+            originalBounds.getWidth(),
+            originalBounds.getHeight()
+        );
     }
 }
