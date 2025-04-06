@@ -16,20 +16,21 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 public class DrawWndPane extends JPanel implements MouseListener, MouseMotionListener {
     private String currentShape = "Line";
     private ArrayList<Color> shapeColors = new ArrayList<>();
-    private int shapeCaught = -1, pointCaught;
+    private int itemCaught = -1, pointCaught;
     private ControlPanel controlPanel;
 
-    private ArrayList<DroppedImage> images = new ArrayList<>();
     private ArrayList<Shape> shapes = new ArrayList<>();
+    private ArrayList<DrawableItem> items = new ArrayList<>();
 
     public void dropImage(BufferedImage img, int x, int y, int width, int height) {
-        images.add(new DroppedImage(img, x, y, width, height));
+        items.add(new ImageItem(img, x, y, width, height));
+        itemCaught = items.size()-1;
         repaint();
     }
 
     public void dropShape(Shape shape) {
-        shapes.add(shape);
-        shapeColors.add(getCurrentColor());
+        items.add(new ShapeItem(shape, getCurrentColor()));
+        itemCaught = items.size()-1;
         repaint();
     }
 
@@ -40,39 +41,10 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
         g2d.setColor(Color.black);
         
 
-        for (DroppedImage d : images) {
-            g.drawImage(d.image, d.x, d.y, d.width, d.height, this);
-        }
-
-        for (int i=0;i<shapes.size();i++){
-            Shape s = shapes.get(i);
-            g2d.setColor(shapeColors.get(i));
-            if(s instanceof Rectangle2D.Double)
-            {
-                Rectangle2D.Double rect = (Rectangle2D.Double)s;
-                g2d.fillRect((int)rect.x,(int) rect.y,(int)rect.width, (int)rect.height);
-            }
-            else if(s instanceof Ellipse2D.Double){
-                Ellipse2D.Double oval = (Ellipse2D.Double)s;
-                g2d.fillOval((int)oval.x,(int) oval.y, (int)oval.width, (int)oval.height);
-            }    
-        }
-
-    }
-
-    private static class DroppedImage {
-        BufferedImage image;
-        int x, y, width, height;
-
-        public DroppedImage(BufferedImage image, int x, int y, int width, int height) {
-            this.image = image;
-            this.x = x;
-            this.y = y;
-            this.width = width;
-            this.height = height;
+        for (DrawableItem d : items) {
+            d.draw(g2d);
         }
     }
-
 
     public DrawWndPane() {
         setBackground(Color.white);
@@ -80,7 +52,11 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
         addMouseMotionListener(this);
     }
 
-
+    
+    public void setControlPanel(ControlPanel controlPanel){
+        this.controlPanel = controlPanel;
+    }
+    
     public void setCurrentShape(String shape) {
         this.currentShape = shape;
     }
@@ -205,138 +181,30 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
         }
     }  
 
-    private boolean CatchClosePoint( double  x, double y )
+    private boolean CatchClosePoint(int  x, int y)
    {
-       for ( int i = 0; i < shapes.size(); i++ )
+       for ( int i = 0; i < items.size(); i++ )
        {
-            Point2D center = getShapeCenter(shapes.get(i));
-
-            if (shapes.get( i ) instanceof Rectangle2D.Double){
-                Rectangle2D.Double rect = (Rectangle2D.Double)shapes.get(i);
-
-                // top left
-                if ( (Math.abs( rect.x - x) < 10) && (Math.abs( rect.y - y) < 10) )
-                {
-                    shapeCaught = i;
-                    pointCaught = 0;
-                    return true;
-                }   
-                // right bottom 	   
-                if ( (Math.abs( rect.x + rect.width - x) < 10) && (Math.abs( rect.y + rect.height - y) < 10) )
-                {
-                    shapeCaught = i;
-                    pointCaught = 1;
-                    return true;
-                }   
-                // middle
-                if (center.distance(x,y) < 10)
-                {
-                    shapeCaught = i;
-                    pointCaught = 2;
-                    return true;
-                }   
+            if (items.get(i).contains(new Point(x,y))){
+                itemCaught = i;
+                pointCaught = 0;
+                return true;
             } 
-            else if(shapes.get( i ) instanceof Ellipse2D.Double){
-                Ellipse2D.Double circ = (Ellipse2D.Double)shapes.get(i);
-
-                // middle 	   
-                if ( center.distance(x,y) < 10 )
-                {
-                    shapeCaught = i;
-                    pointCaught = 0;
-                    return true;
-                }    	
-                // perimeter   
-                if ( Math.abs(center.distance(x,y) - circ.height/2) < 10 )
-                {
-                    shapeCaught = i;
-                    pointCaught = 1;
-                    return true;
-                }   
-            } 
+            
        }
 	   return false;
    }
- 
-    private void updateShapePosition(int x, int y) {
-        if (shapeCaught >= 0) {
-            Graphics g = getGraphics();
-            Graphics2D g2d = (Graphics2D) g;
-    
-            g2d.setXORMode(Color.white);
-            g2d.setColor(shapeColors.get(shapeCaught));
-    
-            Shape shape = shapes.get(shapeCaught);
-            g2d.draw(shape); // remove old shape
-    
-            // new shape position
-            if (shape instanceof Line2D.Double line) {
-                updateLine(line, x, y);
-            } else if (shape instanceof Rectangle2D.Double rect) {
-                updateRectangle(rect, x, y);
-            } else if (shape instanceof Ellipse2D.Double circ) {
-                updateCircle(circ, x, y);
-            }
-            
-            g2d.setColor(getCurrentColor());
-            shapeColors.set(shapeCaught, getCurrentColor());
-            g2d.draw(shape); 
-            g2d.setPaintMode();
-        }
-    }
 
-    private void updateLine(Line2D.Double line, int x, int y) {
-        switch (pointCaught) {
-            case 0 -> { line.x1 = x; line.y1 = y; }
-            case 1 -> { line.x2 = x; line.y2 = y; }
-            case 2 -> { // center - move 
-                double xc = x - (line.x1 + line.x2) / 2;
-                double yc = y - (line.y1 + line.y2) / 2;
-                line.x1 += xc;
-                line.y1 += yc;
-                line.x2 += xc;
-                line.y2 += yc;
+   public void moveItem(String direction){
+        if(itemCaught >= 0){
+            switch(direction){
+                case("Left") -> System.out.print(itemCaught+" left");
+                case("Up") -> System.out.print(itemCaught+" up");
+                case("Right") -> System.out.print(itemCaught+" right");
+                case("Down") -> System.out.print(itemCaught+" down");
             }
         }
-    }
-    private void updateRectangle(Rectangle2D.Double rect, int x, int y) {
-        switch (pointCaught) {
-            case 0 -> { // top-left corner
-                rect.width += (rect.x - x);
-                rect.height += (rect.y - y);
-                rect.x = x;
-                rect.y = y;
-            }
-            case 1 -> { // bottom-right corner
-                rect.x = Math.min(rect.x, x);
-                rect.y = Math.min(rect.y, y);
-                rect.width = Math.abs(rect.x - x);
-                rect.height = Math.abs(rect.y - y);                
-            }
-            case 2 -> { // center - moving 
-                Point2D center = getShapeCenter(rect);
-                rect.x += (x - center.getX());
-                rect.y += (y - center.getY());
-            }
-        }
-    }
-    
-    private void updateCircle(Ellipse2D.Double circ, int x, int y) {
-        Point2D center = getShapeCenter(circ);
-        switch (pointCaught) {
-            case 0 -> { // center - moving
-                circ.x += (x - center.getX());
-                circ.y += (y - center.getY());
-            }
-            case 1 -> { // on the perimeter - resize 
-                double radius = center.distance(x, y);
-                circ.width = circ.height = 2 * radius;
-                circ.x = center.getX() - radius;
-                circ.y = center.getY() - radius;
-            }
-        }
-    }    
-
+   }
     private Color getCurrentColor() {
         try {
             int r = Integer.parseInt(controlPanel.redField.getText());
@@ -354,95 +222,40 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
         return Color.BLACK; //black as default
     }
 
-    private Point2D getShapeCenter(Shape shape) {
-        if (shape instanceof Rectangle2D) {
-            Rectangle2D rect = (Rectangle2D) shape;
-            return new Point2D.Double(rect.getX() + rect.getWidth() / 2, rect.getY() + rect.getHeight() / 2);
-        } else if (shape instanceof Ellipse2D) {
-            Ellipse2D circle = (Ellipse2D) shape;
-            return new Point2D.Double(circle.getX() + circle.getWidth() / 2, circle.getY() + circle.getHeight() / 2);
-        }
-        return new Point2D.Double(0, 0);
-    }
-
-    public void setControlPanel(ControlPanel controlPanel)
-    {
-        this.controlPanel = controlPanel;
-    }
-    
-
-    public void removeShape()
-    {
-        shapes.remove(shapeCaught);
-        shapeColors.remove(shapeCaught);
-        repaint();
-    }
-
     public void removeAction(ActionEvent event) {
-        shapes.clear();
-        shapeColors.clear();
-        images.clear();
+        items.clear();
         repaint();
     }
     
     public void mousePressed(MouseEvent e) {
         if (SwingUtilities.isRightMouseButton(e)) {
 
-            // for clicking in the center of the shape
-            for (int i = 0; i < shapes.size(); i++) {
-                Shape shape = shapes.get(i);
-                Point2D center = getShapeCenter(shape);
-                
-                if (center.distance(e.getX(), e.getY()) < 10) { 
-                    shapeCaught = i;
-                    removeShape();
-                    return;
-                }
-            }
-
-            // for clicking inside the image
-            for (int i = 0; i < images.size(); i++) {
-                DroppedImage image = images.get(i);
-                Rectangle2D.Double imageBounds = new Rectangle2D.Double(image.x, image.y, 100, 100); // Image is 100x100
-                if (imageBounds.contains(e.getPoint())) {
-                    images.remove(i);
+            for (int i = 0; i < items.size(); i++) {
+                if (items.get(i).contains(e.getPoint())) {
+                    items.remove(i);
+                    itemCaught = -1;
                     repaint();
                     return;
                 }
             }
         } 
         else {
-            if (CatchClosePoint(e.getX(),e.getY()))
-                updateShapePosition(e.getX(), e.getY());
-                
-            else{
-                switch (currentShape) {
-                    case "Line" -> shapes.add(new Line2D.Double(e.getX(), e.getY(), e.getX(), e.getY()));
-                    case "Rectangle" -> shapes.add(new Rectangle2D.Double(e.getX(), e.getY(), 0, 0));
-                    case "Circle" -> shapes.add(new Ellipse2D.Double(e.getX(), e.getY(), 0, 0));
-                    default -> {
-                    }
-                }
-                shapeCaught = shapes.size() - 1;
-                shapeColors.add(getCurrentColor()); 
-                pointCaught = 1;
-            }
+           CatchClosePoint(e.getX(), e.getY());
         }
     }
     
     
     public void mouseDragged(MouseEvent e) {
-        if (shapeCaught >= 0) {
-            updateShapePosition(e.getX(), e.getY());
-        }
+        
     }
     
     public void mouseReleased(MouseEvent e) {
-        shapeCaught = -1;
+        //itemCaught = -1;
     }
     
     public void mouseClicked(MouseEvent e) {}
     public void mouseEntered(MouseEvent e) {}
     public void mouseExited(MouseEvent e) {}
     public void mouseMoved(MouseEvent e) {}
+
 }
