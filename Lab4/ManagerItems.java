@@ -105,7 +105,7 @@ public class ManagerItems {
             
             // Create the ImageItem
             ImageItem item = new ImageItem(image, (int)x, (int)y, (int)width, (int)height, imagePath);
-            item.transform = transform;
+            item.setTransform(transform);
             return item;
         } catch (Exception e) {
             e.printStackTrace();

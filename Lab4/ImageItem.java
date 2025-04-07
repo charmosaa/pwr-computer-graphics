@@ -40,23 +40,21 @@ public class ImageItem extends DrawableItem {
         StringBuilder sb = new StringBuilder();
         sb.append("IMAGE,");
         
-        // serialize original bounds
+        // Original bounds
         sb.append(originalBounds.getX()).append(",");
         sb.append(originalBounds.getY()).append(",");
         sb.append(originalBounds.getWidth()).append(",");
         sb.append(originalBounds.getHeight()).append(",");
         
-        // serialize transform
-        sb.append(transform.getScaleX()).append(",");
-        sb.append(transform.getScaleY()).append(",");
-        sb.append(transform.getShearX()).append(",");
-        sb.append(transform.getShearY()).append(",");
-        sb.append(transform.getTranslateX()).append(",");
-        sb.append(transform.getTranslateY()).append(",");
-
-        // serialize img path
-        sb.append(imagePath);
-
+        // Full transform matrix (6 values)
+        double[] matrix = new double[6];
+        transform.getMatrix(matrix);
+        for (int i = 0; i < matrix.length; i++) {
+            if (i > 0) sb.append(",");
+            sb.append(matrix[i]);
+        }
+        
+        sb.append(",").append(imagePath);
         return sb.toString();
     }
 

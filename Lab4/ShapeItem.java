@@ -13,10 +13,12 @@ class ShapeItem extends DrawableItem {
         this.shape = shape;
         this.color = color;
         this.isCirc = isCirc;
-        transform = new AffineTransform();
-        originalBounds = shape.getBounds2D(); // Store original bounds
-        transform.translate(originalBounds.getX(), originalBounds.getY());
-        this.shape = AffineTransform.getTranslateInstance(-originalBounds.getX(), -originalBounds.getY()).createTransformedShape(shape);
+        this.transform = new AffineTransform(); 
+        this.originalBounds = shape.getBounds2D();
+        
+        // Remove these lines - we'll handle positioning purely through transform:
+        // transform.translate(originalBounds.getX(), originalBounds.getY());
+        // this.shape = AffineTransform.getTranslateInstance(-originalBounds.getX(), -originalBounds.getY()).createTransformedShape(shape);
     }
 
     @Override
