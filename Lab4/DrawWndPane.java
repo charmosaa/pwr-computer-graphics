@@ -127,16 +127,14 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
                 itemCaught = items.size()-1;
                 pointCaught = 1;
                 return true;
-            }
-            
-                
+            }                
         }
         return false;
     }
 
     public void moveItem(String direction){
         if(itemCaught >= 0){
-            double pixels = 5; 
+            double pixels = 1; 
             switch(direction){
                 case "Left" -> items.get(itemCaught).translate(-pixels, 0);
                 case "Right" -> items.get(itemCaught).translate(pixels, 0);
@@ -149,7 +147,7 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
 
     public void rotItem(boolean clockwise){
         if (itemCaught >= 0) {
-            double angle = clockwise ? 5 : -5;
+            double angle = clockwise ? 1 : -1;
             items.get(itemCaught).rotate(angle);
             repaint();
         }
@@ -169,7 +167,6 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
                     itemCaught = -1;
                     pointCaught = -1;
                     repaint();
-                    return;
                 }   
             }
         }
@@ -185,37 +182,33 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
     public void mouseDragged(MouseEvent e) {
         if (itemCaught >= 0) {
             DrawableItem item = items.get(itemCaught);
-            if (pointCaught == 0) { // Center drag - move
+            // center - move
+            if (pointCaught == 0) { 
                 double dx = e.getX() - lastMouseX;
                 double dy = e.getY() - lastMouseY;
                 item.translate(dx, dy);
             }
-            else if (pointCaught == 1 ) { // Corner drag - rotate
-                if(isRotateMode)
-                {  
-                    double centerX = item.getCenterX();
-                    double centerY = item.getCenterY();
-                    
-                    // calculate angle change
+            // corner - rotate/resize
+            else if (pointCaught == 1 ) { 
+                double centerX = item.getCenterX();
+                double centerY = item.getCenterY();
+                 //rotate   
+                if(isRotateMode){                 
+                    // angle change
                     double prevAngle = Math.atan2(lastMouseY - centerY, lastMouseX - centerX);
                     double currAngle = Math.atan2(e.getY() - centerY, e.getX() - centerX);
                     double angleDiff = Math.toDegrees(currAngle - prevAngle);
 
                     item.rotate(angleDiff);                    
                 }
-                else{
-                    System.out.println("resize mode");
-                    
-                    double centerX = item.getCenterX();
-                    double centerY = item.getCenterY();
-
-                    // ratio of the new size and the previous
+                //resize  
+                else{                   
+                    // ratio of the new size to the previous
                     double sx = (e.getX()-centerX)/(double)(lastMouseX - centerX) ;
                     double sy =(e.getY()-centerY)/(double)(lastMouseY - centerY) ;
 
                     item.scale(sx, sy, centerX, centerY);
                 }
-                
             }
             lastMouseX = e.getX();
             lastMouseY = e.getY();

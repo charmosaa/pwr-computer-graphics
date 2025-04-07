@@ -59,13 +59,23 @@ abstract class DrawableItem {
     }
 
     public Point2D[] getCorners() {
-        Rectangle2D bounds = transform.createTransformedShape(getOriginalShape()).getBounds2D();
-        return new Point2D[] {
-            new Point2D.Double(bounds.getMinX(), bounds.getMinY()), // Top-left
-            new Point2D.Double(bounds.getMaxX(), bounds.getMinY()), // Top-right
-            new Point2D.Double(bounds.getMaxX(), bounds.getMaxY()), // Bottom-right
-            new Point2D.Double(bounds.getMinX(), bounds.getMaxY())  // Bottom-left
+        Rectangle2D originalBounds = getOriginalShape().getBounds2D();
+        
+        // four corners of the original shape
+        Point2D[] originalCorners = {
+            new Point2D.Double(originalBounds.getMinX(), originalBounds.getMinY()), // Top-left
+            new Point2D.Double(originalBounds.getMaxX(), originalBounds.getMinY()), // Top-right
+            new Point2D.Double(originalBounds.getMaxX(), originalBounds.getMaxY()), // Bottom-right
+            new Point2D.Double(originalBounds.getMinX(), originalBounds.getMaxY())  // Bottom-left
         };
+        
+        // corners after transformation
+        Point2D[] transformedCorners = new Point2D[4];
+        for (int i = 0; i < 4; i++) {
+            transformedCorners[i] = transform.transform(originalCorners[i], null);
+        }
+        
+        return transformedCorners;
     }
 
 
