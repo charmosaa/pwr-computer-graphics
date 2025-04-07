@@ -10,26 +10,42 @@ abstract class DrawableItem {
 
     public abstract Shape getOriginalShape(); 
 
-    public boolean contains(Point p) {
-        try {
-            AffineTransform inverse = transform.createInverse();
-            Point2D localPoint = inverse.transform(p, null);
-            return getOriginalShape().contains(localPoint);
-        } catch (NoninvertibleTransformException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
     public void translate(double dx, double dy) {
-        transform.translate(dx, dy);
+        AffineTransform currentTransform = getTransform();
+                            
+        AffineTransform moveTransform = new AffineTransform();
+        moveTransform.translate(dx, dy);
+
+        moveTransform.concatenate(currentTransform);
+        setTransform(moveTransform);
     }
 
     public void rotate(double angleDegrees) {
-        Rectangle2D bounds = getOriginalShape().getBounds2D();
-        double centerX = bounds.getCenterX();
-        double centerY = bounds.getCenterY();
-        transform.rotate(Math.toRadians(angleDegrees), centerX, centerY);
+
+        double centerX = getCenterX();
+        double centerY = getCenterY();
+
+        AffineTransform currentTransform = getTransform();
+                            
+        AffineTransform rotateTransform = new AffineTransform();
+        rotateTransform.translate(centerX, centerY);
+        rotateTransform.rotate(Math.toRadians(angleDegrees));
+        rotateTransform.translate(-centerX, -centerY);
+
+        rotateTransform.concatenate(currentTransform);
+        setTransform(rotateTransform);
+    }
+
+    public void scale(double sx, double sy, double centerX, double centerY){
+        AffineTransform currentTransform = getTransform();
+                    
+        AffineTransform scaleTransform = new AffineTransform();
+        scaleTransform.translate(centerX, centerY);
+        scaleTransform.scale(sx, sy);
+        scaleTransform.translate(-centerX, -centerY);
+        
+        scaleTransform.concatenate(currentTransform);
+        setTransform(scaleTransform);
     }
 
     public double getCenterX() {
@@ -63,24 +79,17 @@ abstract class DrawableItem {
         return -1; 
     }
 
-        // In DrawableItem class
+    
     public void resetTransform() {
         transform = new AffineTransform();
     }
 
     public AffineTransform getTransform() {
-        return transform;
+        return new AffineTransform(transform);
     }
 
     public void setTransform(AffineTransform newTransform) {
         transform = new AffineTransform(newTransform);
     }
 
-    
-    public void scale(double sx, double sy, double pivotX, double pivotY) {
-        // Translate pivot to origin, scale, then translate back
-        transform.translate(pivotX, pivotY);
-        transform.scale(sx, sy);
-        transform.translate(-pivotX, -pivotY);
-    }   
 }

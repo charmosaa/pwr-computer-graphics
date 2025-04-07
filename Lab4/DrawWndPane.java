@@ -2,7 +2,6 @@ package Lab4;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
@@ -89,6 +88,23 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
         }
     }  
 
+    private Color getCurrentColor() {
+        try {
+            int r = Integer.parseInt(controlPanel.redField.getText());
+            int g = Integer.parseInt(controlPanel.greenField.getText());
+            int b = Integer.parseInt(controlPanel.blueField.getText());
+
+            r = Math.max(0, Math.min(255, r));
+            g = Math.max(0, Math.min(255, g));
+            b = Math.max(0, Math.min(255, b));
+
+            return new Color(r,g,b);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Please enter valid RGB values (0-255)", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+        return Color.BLACK; //black as default
+    }
+
     private boolean CatchClosePoint(int  x, int y)
     {
         for ( int i = 0; i < items.size(); i++ )
@@ -97,7 +113,7 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
             Point center = new Point((int)item.getCenterX(), (int)item.getCenterY());
             Point currentPoint = new Point(x,y);
 
-            if(center.distance(currentPoint) < 10)
+            if(center.distance(currentPoint) < 20)
             {
                 items.add(item);
                 items.remove(i);
@@ -109,7 +125,7 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
                 items.add(item);
                 items.remove(i);
                 itemCaught = items.size()-1;
-                pointCaught = item.getClosestCorner(currentPoint, 10) + 2 ;
+                pointCaught = 1;
                 return true;
             }
             
@@ -139,23 +155,6 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
         }
     }
 
-    private Color getCurrentColor() {
-        try {
-            int r = Integer.parseInt(controlPanel.redField.getText());
-            int g = Integer.parseInt(controlPanel.greenField.getText());
-            int b = Integer.parseInt(controlPanel.blueField.getText());
-
-            r = Math.max(0, Math.min(255, r));
-            g = Math.max(0, Math.min(255, g));
-            b = Math.max(0, Math.min(255, b));
-
-            return new Color(r,g,b);
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Please enter valid RGB values (0-255)", "Error", JOptionPane.ERROR_MESSAGE);
-        }
-        return Color.BLACK; //black as default
-    }
-
     public void removeAction(ActionEvent event) {
         items.clear();
         repaint();
@@ -163,16 +162,17 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
     
     public void mousePressed(MouseEvent e) {
         if (SwingUtilities.isRightMouseButton(e)) {
-
-            for (int i = 0; i < items.size(); i++) {
-                if (items.get(i).contains(e.getPoint())) {
-                    items.remove(i);
+            if (CatchClosePoint(e.getX(), e.getY())){
+                if(itemCaught >= 0 && pointCaught == 0)
+                {
+                    items.remove(itemCaught);
                     itemCaught = -1;
+                    pointCaught = -1;
                     repaint();
                     return;
-                }
+                }   
             }
-        } 
+        }
         else {
             if (CatchClosePoint(e.getX(), e.getY())) {
                 lastMouseX = e.getX();
@@ -190,7 +190,7 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
                 double dy = e.getY() - lastMouseY;
                 item.translate(dx, dy);
             }
-            else if (pointCaught >= 2 ) { // Corner drag - rotate
+            else if (pointCaught == 1 ) { // Corner drag - rotate
                 if(isRotateMode)
                 {  
                     double centerX = item.getCenterX();
@@ -200,59 +200,20 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
                     double prevAngle = Math.atan2(lastMouseY - centerY, lastMouseX - centerX);
                     double currAngle = Math.atan2(e.getY() - centerY, e.getX() - centerX);
                     double angleDiff = Math.toDegrees(currAngle - prevAngle);
-                    
-                    item.rotate(angleDiff);
+
+                    item.rotate(angleDiff);                    
                 }
                 else{
                     System.out.println("resize mode");
-                     // Resize logic
+                    
                     double centerX = item.getCenterX();
                     double centerY = item.getCenterY();
-                    
-                    // Get the original untransformed bounds
-                    Rectangle2D originalBounds = item.getOriginalShape().getBounds2D();
-                    double origWidth = originalBounds.getWidth();
-                    double origHeight = originalBounds.getHeight();
-                    
-                    // Calculate mouse movement since last position
-                    double dx = e.getX() - lastMouseX;
-                    double dy = e.getY() - lastMouseY;
-                    
-                    // Determine scaling direction based on which corner is dragged
-                    double sx = 1.0, sy = 1.0;
-                    double scaleFactor = 0.01; // Sensitivity adjustment
-                    
-                    switch (pointCaught - 2) {
-                        case 0: // Top-left
-                            sx = 1.0 - dx * scaleFactor;
-                            sy = 1.0 - dy * scaleFactor;
-                            break;
-                        case 1: // Top-right
-                            sx = 1.0 + dx * scaleFactor;
-                            sy = 1.0 - dy * scaleFactor;
-                            break;
-                        case 2: // Bottom-right
-                            sx = 1.0 + dx * scaleFactor;
-                            sy = 1.0 + dy * scaleFactor;
-                            break;
-                        case 3: // Bottom-left
-                            sx = 1.0 - dx * scaleFactor;
-                            sy = 1.0 + dy * scaleFactor;
-                            break;
-                    }
-                    
-                    // Apply minimum scaling limit
-                    sx = Math.max(0.1, Math.min(sx, 10.0));
-                    sy = Math.max(0.1, Math.min(sy, 10.0));
-                    
-                    // Reset transform and apply new scaling
-                    AffineTransform newTransform = new AffineTransform();
-                    newTransform.translate(centerX, centerY);
-                    newTransform.scale(sx, sy);
-                    newTransform.translate(-centerX, -centerY);
-                    newTransform.concatenate(item.getTransform());
-                    
-                    item.setTransform(newTransform);
+
+                    // ratio of the new size and the previous
+                    double sx = (e.getX()-centerX)/(double)(lastMouseX - centerX) ;
+                    double sy =(e.getY()-centerY)/(double)(lastMouseY - centerY) ;
+
+                    item.scale(sx, sy, centerX, centerY);
                 }
                 
             }
@@ -261,10 +222,6 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
     
             repaint();
         }
-    }
-    private Point2D getOppositeCorner(int cornerIndex) {
-        // Returns the corner opposite to the given index
-        return items.get(itemCaught).getCorners()[(cornerIndex + 2) % 4];
     }
     
     public void mouseReleased(MouseEvent e) {
