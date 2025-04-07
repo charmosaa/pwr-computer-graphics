@@ -2,8 +2,12 @@ package Lab4;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.*;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -16,13 +20,13 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
     private ControlPanel controlPanel;
     private Graphics2D g2d;
 
-    public void dropImage(BufferedImage img, int x, int y, int width, int height) {
-        items.add(new ImageItem(img, x, y, width, height));
+    public void dropImage(BufferedImage img, int x, int y, int width, int height, String imagePath) {
+        items.add(new ImageItem(img, x, y, width, height, imagePath));
         itemCaught = items.size()-1;
         repaint();
     }
-    public void dropShape(Shape shape) {
-        items.add(new ShapeItem(shape, getCurrentColor()));
+    public void dropShape(Shape shape, boolean isCirc) {
+        items.add(new ShapeItem(shape, getCurrentColor(), isCirc));
         itemCaught = items.size()-1;
         repaint();
     }
@@ -54,40 +58,118 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
     }
     
 
-    public void loadVectorFromFile() {
+    public void loadFromTxt() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Load Drawing From Text");
+        
+        if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+            String baseDir = selectedFile.getParent();
+            
+            items.clear(); // Clear existing items
+            
+            try (BufferedReader reader = new BufferedReader(new FileReader(selectedFile))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (line.startsWith("RECT,") || line.startsWith("CIRC,")) {
+                        ShapeItem item = ManagerItems.deserialize(line);
+                        if (item != null) items.add(item);
+                    } else if (line.startsWith("IMAGE,")) {
+                        ImageItem item = ManagerItems.deserializeImage(line, baseDir);
+                        if (item != null) items.add(item);
+                    }
+                }
+                repaint();
+                JOptionPane.showMessageDialog(null, "Drawing loaded successfully!");
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "Error loading file!", "Error", JOptionPane.ERROR_MESSAGE);
+                e.printStackTrace();
+            }
+        }
+    }
+    public void saveToTextFile() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Save As Text");
+        fileChooser.setSelectedFile(new File("drawing.txt"));
+        
+        if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+            if (!selectedFile.getName().toLowerCase().endsWith(".txt")) {
+                selectedFile = new File(selectedFile.getAbsolutePath() + ".txt");
+            }
+            
+            try (PrintWriter writer = new PrintWriter(selectedFile)) {
+                // Save each item
+                for (DrawableItem item : items) {
+                    writer.println(item.serialize());
+                }
+                JOptionPane.showMessageDialog(null, "Drawing saved to: " + selectedFile.getName());
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "Error saving file!", "Error", JOptionPane.ERROR_MESSAGE);
+                e.printStackTrace();
+            }
+        }
     }
      
     public void saveAsImage() {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Save Image As");
-
-        // default file name
         fileChooser.setSelectedFile(new File("image.png"));
-
-        int userSelection = fileChooser.showSaveDialog(null);
-
-        if (userSelection == JFileChooser.APPROVE_OPTION) {
+    
+        if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
             File selectedFile = fileChooser.getSelectedFile();
-
-            // file as .png 
             if (!selectedFile.getName().toLowerCase().endsWith(".png")) {
                 selectedFile = new File(selectedFile.getAbsolutePath() + ".png");
             }
-
-            BufferedImage image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g2d = image.createGraphics();
-            paint(g2d);
-            g2d.dispose();
-
+    
             try {
+                // calculate total bounds 
+                Rectangle2D totalBounds = null;
+                for (DrawableItem item : items) {
+                    Shape transformed = item.transform.createTransformedShape(item.getOriginalShape());
+                    Rectangle2D bounds = transformed.getBounds2D();
+                    if (totalBounds == null) {
+                        totalBounds = bounds;
+                    } else {
+                        totalBounds = totalBounds.createUnion(bounds);
+                    }
+                }
+    
+                int padding = 20; 
+                int imageWidth = (int) Math.ceil(totalBounds.getWidth()+2*padding);
+                int imageHeight = (int) Math.ceil(totalBounds.getHeight()+2*padding);
+    
+                // image with enough space
+                BufferedImage image = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB);
+                Graphics2D gBuffer = image.createGraphics();
+                
+                gBuffer.setColor(Color.WHITE);
+                gBuffer.fillRect(0, 0, imageWidth, imageHeight);
+                
+                // adjust offset
+                AffineTransform transform = new AffineTransform();
+                transform.translate(
+                    padding - totalBounds.getX(),
+                    padding - totalBounds.getY()
+                );
+                gBuffer.transform(transform);
+                
+                // drawing all the items
+                for (DrawableItem item : items) {
+                    item.draw(gBuffer);
+                }
+    
+                gBuffer.dispose();
+
+                //saving img
                 ImageIO.write(image, "PNG", selectedFile);
                 JOptionPane.showMessageDialog(null, "Image saved as: " + selectedFile.getName());
             } catch (Exception e) {
-                JOptionPane.showMessageDialog(null, "Error saving image!", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog( null, "Error saving image: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                e.printStackTrace();
             }
         }
-    }  
-
+    }
     private Color getCurrentColor() {
         try {
             int r = Integer.parseInt(controlPanel.redField.getText());

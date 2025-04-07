@@ -12,15 +12,18 @@ public class ImagePanel extends JPanel implements MouseListener, MouseMotionList
     private ArrayList<BufferedImage> images = new ArrayList<>();
     private ArrayList<Integer> imageY = new ArrayList<>();
     private BufferedImage draggedImage = null;
-    private int dragX, dragY;
+    private String draggedPath;
     private DrawWndPane drawPane; // Set externally
+    private String DIR_PATH = "C:\\Users\\marty\\projects\\grafika\\Lab4\\Assets";
     int IMAGE_SIZE = 100;
     int IMAGE_X = 50;
+    File[] files;
+
 
 
     public ImagePanel() {
-        File folder = new File("C:\\Users\\marty\\projects\\grafika\\Lab4\\Assets");
-        File[] files = folder.listFiles((dir, name) -> {
+        File folder = new File(DIR_PATH);
+        files = folder.listFiles((dir, name) -> {
             return name.toLowerCase().endsWith(".png") || name.toLowerCase().endsWith(".jpg");
         });
 
@@ -73,6 +76,7 @@ public class ImagePanel extends JPanel implements MouseListener, MouseMotionList
 
             if (e.getX() > x && e.getX() < x+IMAGE_SIZE && e.getY() > y && e.getY() < y+IMAGE_SIZE) {
                 draggedImage = images.get(i);
+                draggedPath = files[i].getAbsolutePath();
                 repaint();
                 break;
             }
@@ -91,12 +95,13 @@ public class ImagePanel extends JPanel implements MouseListener, MouseMotionList
     public void mouseReleased(MouseEvent e) {
         if (draggedImage != null && drawPane != null) {
             Point dropPoint = SwingUtilities.convertPoint(this, e.getPoint(), drawPane);
-            drawPane.dropImage(draggedImage, dropPoint.x - IMAGE_SIZE/2, dropPoint.y - IMAGE_SIZE/2, IMAGE_SIZE, IMAGE_SIZE);
+            drawPane.dropImage(draggedImage, dropPoint.x - IMAGE_SIZE/2, dropPoint.y - IMAGE_SIZE/2, IMAGE_SIZE, IMAGE_SIZE, draggedPath);
         }
     
         // clear the temp view 
         ((DragGlassPane) getRootPane().getGlassPane()).clearImage();
         draggedImage = null;
+        draggedPath = "";
     }
     
     

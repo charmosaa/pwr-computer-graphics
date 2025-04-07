@@ -71,8 +71,8 @@ public class ControlPanel extends JPanel {
 
         // adding actions
         button.addActionListener(e -> drawPane.removeAction(e));
-        //saveVector.addActionListener(e -> drawPane.saveVectorToFile());
-        loadVector.addActionListener(e -> drawPane.loadVectorFromFile());
+        saveVector.addActionListener(e -> drawPane.saveToTextFile());
+        loadVector.addActionListener(e -> drawPane.loadFromTxt());
         saveRaster.addActionListener(e -> drawPane.saveAsImage());
 
         moveLeft.addActionListener(e -> drawPane.moveItem("Left"));

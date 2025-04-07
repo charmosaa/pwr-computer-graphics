@@ -61,10 +61,10 @@ public class ShapesPanel extends JPanel implements MouseListener, MouseMotionLis
     
             if (draggedShape instanceof Rectangle2D.Double) {
                 Rectangle2D.Double rect = (Rectangle2D.Double) draggedShape;
-                drawPane.dropShape(new Rectangle2D.Double(dropPoint.getX() - rect.width/2, dropPoint.getY() - rect.height/2, rect.width, rect.height));
+                drawPane.dropShape(new Rectangle2D.Double(dropPoint.getX() - rect.width/2, dropPoint.getY() - rect.height/2, rect.width, rect.height),false);
             } else if (draggedShape instanceof Ellipse2D.Double) {
                 Ellipse2D.Double circ = (Ellipse2D.Double) draggedShape;
-                drawPane.dropShape(new Ellipse2D.Double(dropPoint.getX() - circ.width/2, dropPoint.getY() - circ.height/2, circ.width, circ.height));
+                drawPane.dropShape(new Ellipse2D.Double(dropPoint.getX() - circ.width/2, dropPoint.getY() - circ.height/2, circ.width, circ.height),true);
             }
         }
     

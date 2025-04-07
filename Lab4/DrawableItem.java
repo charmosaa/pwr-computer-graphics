@@ -10,6 +10,8 @@ abstract class DrawableItem {
 
     public abstract Shape getOriginalShape(); 
 
+    public abstract String serialize();
+
     public void translate(double dx, double dy) {
         AffineTransform currentTransform = getTransform();
                             
