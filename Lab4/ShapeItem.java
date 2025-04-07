@@ -7,7 +7,7 @@ class ShapeItem extends DrawableItem {
     Shape shape;
     Color color;
     boolean isCirc = false;
-    Rectangle2D originalBounds; // Store original bounds for serialization
+    Rectangle2D originalBounds;
 
     ShapeItem(Shape shape, Color color, boolean isCirc) {
         this.shape = shape;
@@ -15,10 +15,6 @@ class ShapeItem extends DrawableItem {
         this.isCirc = isCirc;
         this.transform = new AffineTransform(); 
         this.originalBounds = shape.getBounds2D();
-        
-        // Remove these lines - we'll handle positioning purely through transform:
-        // transform.translate(originalBounds.getX(), originalBounds.getY());
-        // this.shape = AffineTransform.getTranslateInstance(-originalBounds.getX(), -originalBounds.getY()).createTransformedShape(shape);
     }
 
     @Override
@@ -37,18 +33,19 @@ class ShapeItem extends DrawableItem {
     public String serialize() {
         StringBuilder sb = new StringBuilder();
         
-        // Serialize shape type and original bounds (before any transforms)
-        if (isCirc) {
+        // type
+        if (isCirc)
             sb.append("CIRC,");
-        } else {
+        else 
             sb.append("RECT,");
-        }
+        
+        // original position
         sb.append(originalBounds.getX()).append(",");
         sb.append(originalBounds.getY()).append(",");
         sb.append(originalBounds.getWidth()).append(",");
         sb.append(originalBounds.getHeight()).append(",");
 
-        // Serialize transform (6 elements of the transformation matrix)
+        // transformation matrix
         double[] matrix = new double[6];
         transform.getMatrix(matrix);
         for (int i = 0; i < matrix.length; i++) {
@@ -56,7 +53,7 @@ class ShapeItem extends DrawableItem {
             sb.append(matrix[i]);
         }
 
-        // Serialize color
+        // color
         sb.append(",").append(color.getRed());
         sb.append(",").append(color.getGreen());
         sb.append(",").append(color.getBlue());

@@ -99,7 +99,7 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
             }
             
             try (PrintWriter writer = new PrintWriter(selectedFile)) {
-                // Save each item
+                // saving items
                 for (DrawableItem item : items) {
                     writer.println(item.serialize());
                 }
