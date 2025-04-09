@@ -13,41 +13,78 @@ public class ImagePanel extends JPanel implements MouseListener, MouseMotionList
     private ArrayList<Integer> imageY = new ArrayList<>();
     private BufferedImage draggedImage = null;
     private String draggedPath;
-    private DrawWndPane drawPane; // Set externally
+    private DrawWndPane drawPane; 
+    private DragGlassPane glassPane;
     private String DIR_PATH = "C:\\Users\\marty\\projects\\grafika\\Lab4\\Assets";
     int IMAGE_SIZE = 100;
     int IMAGE_X = 50;
     File[] files;
-
+    JLabel label;
+    JButton changeDirButton;
 
 
     public ImagePanel() {
-        File folder = new File(DIR_PATH);
-        files = folder.listFiles((dir, name) -> {
-            return name.toLowerCase().endsWith(".png") || name.toLowerCase().endsWith(".jpg");
+        setPreferredSize(new Dimension(200, 400));
+        setBackground(Color.YELLOW);
+
+        label = new JLabel("Assets: ");
+        label.setPreferredSize(new Dimension(150, 20));
+
+        changeDirButton = new JButton("Change");
+        changeDirButton.setPreferredSize(new Dimension(100,20));
+        
+        add(changeDirButton);
+        add(label);
+
+        loadImagesFromDirectory(DIR_PATH);
+
+        addMouseListener(this);
+        addMouseMotionListener(this);
+        changeDirButton.addActionListener(e -> {
+            JFileChooser dirChooser = new JFileChooser();
+            dirChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            dirChooser.setDialogTitle("Select Image Directory");
+        
+            int result = dirChooser.showOpenDialog(this);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                File selectedDir = dirChooser.getSelectedFile();
+                if (selectedDir != null && selectedDir.isDirectory()) {
+                    DIR_PATH = selectedDir.getAbsolutePath();
+                    loadImagesFromDirectory(DIR_PATH);
+                    repaint();
+                }
+            }
         });
 
+    }
+
+    private void loadImagesFromDirectory(String path) {
+        images.clear();
+        File folder = new File(path);
+        files = folder.listFiles((dir, name) ->
+            name.toLowerCase().endsWith(".png") || name.toLowerCase().endsWith(".jpg")
+        );
+    
         if (files != null) {
             for (File file : files) {
                 try {
                     BufferedImage img = ImageIO.read(file);
-                    images.add(img);
+                    if (img != null) {
+                        images.add(img);
+                    }
                 } catch (Exception e) {
                     System.out.println("Could not load: " + file.getName());
                 }
             }
         }
-
-        setPreferredSize(new Dimension(200, 370));
-        setBackground(Color.YELLOW);
-
-        addMouseListener(this);
-        addMouseMotionListener(this);
-
     }
+    
 
     public void setDrawPane(DrawWndPane drawWndPane){
         this.drawPane = drawWndPane;
+    }
+    public void setGlassPane(DragGlassPane glassPane){
+        this.glassPane = glassPane;
     }
 
     @Override
@@ -55,7 +92,7 @@ public class ImagePanel extends JPanel implements MouseListener, MouseMotionList
         super.paintComponent(g);
 
         imageY.clear();
-        int x = IMAGE_X, y = 25;
+        int x = IMAGE_X, y = 50;
         int spacing = 10;
 
         for (BufferedImage img : images) {
@@ -71,25 +108,29 @@ public class ImagePanel extends JPanel implements MouseListener, MouseMotionList
 
     public void mousePressed(MouseEvent e) {
         for (int i = 0; i < imageY.size(); i++) {
-            int x =IMAGE_X;
+            int x = IMAGE_X;
             int y = imageY.get(i);
-
-            if (e.getX() > x && e.getX() < x+IMAGE_SIZE && e.getY() > y && e.getY() < y+IMAGE_SIZE) {
+    
+            if (e.getX() > x && e.getX() < x + IMAGE_SIZE && e.getY() > y && e.getY() < y + IMAGE_SIZE) {
                 draggedImage = images.get(i);
                 draggedPath = files[i].getAbsolutePath();
-                repaint();
+    
+                Point screenPoint = SwingUtilities.convertPoint(this, e.getPoint(), getRootPane());
+                glassPane.setImage(draggedImage, screenPoint);
                 break;
             }
         }
     }
     
     
+    
     public void mouseDragged(MouseEvent e) {
         if (draggedImage != null && drawPane != null) {
             Point screenPoint = SwingUtilities.convertPoint(this, e.getPoint(), getRootPane());
-            ((DragGlassPane) getRootPane().getGlassPane()).setImage(draggedImage, screenPoint);
+            glassPane.updateLocation(screenPoint); 
         }
     }
+    
     
     
     public void mouseReleased(MouseEvent e) {

@@ -6,7 +6,6 @@ import java.awt.image.BufferedImage;
 
 public class ImageItem extends DrawableItem {
     private BufferedImage image;
-    private Rectangle2D originalBounds;
     private String imagePath;
 
     public ImageItem(BufferedImage image, int x, int y, int width, int height, String imagePath) {
@@ -25,11 +24,6 @@ public class ImageItem extends DrawableItem {
                     (int)originalBounds.getHeight(), 
                     null);
         g2d.setTransform(oldTransform);
-    }
-
-    @Override
-    public Shape getOriginalShape() {
-        return originalBounds;
     }
 
     @Override

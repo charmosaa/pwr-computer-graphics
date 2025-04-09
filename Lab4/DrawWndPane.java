@@ -40,6 +40,14 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
         for (DrawableItem d : items) {
             d.draw(g2d);
         }
+        if(itemCaught >= 0 && items.get(itemCaught) instanceof ShapeItem){
+            ShapeItem item = (ShapeItem) items.get(itemCaught);
+            if(item.isCirc){
+                item.drawBounds(g2d);
+            }
+            
+
+        }
     }
 
     public DrawWndPane() {
@@ -60,7 +68,7 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
 
     public void loadFromTxt() {
         JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Load Drawing From Text");
+        fileChooser.setDialogTitle("Load Plakat From Text");
         
         if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
             File selectedFile = fileChooser.getSelectedFile();
@@ -80,7 +88,7 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
                     }
                 }
                 repaint();
-                JOptionPane.showMessageDialog(null, "Drawing loaded successfully!");
+                JOptionPane.showMessageDialog(null, "Plakat loaded successfully!");
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(null, "Error loading file!", "Error", JOptionPane.ERROR_MESSAGE);
                 e.printStackTrace();
@@ -90,7 +98,7 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
     public void saveToTextFile() {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Save As Text");
-        fileChooser.setSelectedFile(new File("drawing.txt"));
+        fileChooser.setSelectedFile(new File("plakat.txt"));
         
         if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
             File selectedFile = fileChooser.getSelectedFile();
@@ -103,7 +111,7 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
                 for (DrawableItem item : items) {
                     writer.println(item.serialize());
                 }
-                JOptionPane.showMessageDialog(null, "Drawing saved to: " + selectedFile.getName());
+                JOptionPane.showMessageDialog(null, "Plakat saved to: " + selectedFile.getName());
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(null, "Error saving file!", "Error", JOptionPane.ERROR_MESSAGE);
                 e.printStackTrace();
@@ -237,6 +245,8 @@ public class DrawWndPane extends JPanel implements MouseListener, MouseMotionLis
 
     public void removeAction(ActionEvent event) {
         items.clear();
+        itemCaught = -1;
+        pointCaught = -1;
         repaint();
     }
     

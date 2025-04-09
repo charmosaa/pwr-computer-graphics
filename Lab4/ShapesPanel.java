@@ -11,13 +11,19 @@ public class ShapesPanel extends JPanel implements MouseListener, MouseMotionLis
     Ellipse2D.Double circ;
     Shape draggedShape;
     DrawWndPane drawPane;
+    DragGlassPane glassPane;
+    JLabel label;
 
     public ShapesPanel()
     {
         rect = new Rectangle2D.Double(50,50,100,100);
         circ = new Ellipse2D.Double(50,200 , 100, 100);
         setBackground(Color.yellow);
-        setPreferredSize(new Dimension(200, 350));
+        setPreferredSize(new Dimension(200, 320));
+
+        label = new JLabel("Shapes: ");
+        label.setPreferredSize(new Dimension(150,60));
+        add(label);
 
         addMouseListener(this);
         addMouseMotionListener(this);
@@ -28,29 +34,40 @@ public class ShapesPanel extends JPanel implements MouseListener, MouseMotionLis
         drawPane = drawWndPane;
     }
 
+    public void setGlassPane(DragGlassPane glassPane){
+        this.glassPane = glassPane;
+    }
+
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
         g2d.setColor(Color.black);
-        g2d.fillRect((int)rect.x,(int) rect.y,(int)rect.width, (int)rect.height);
-        g2d.fillOval((int)circ.x,(int) circ.y, (int)circ.width, (int)circ.height);
+        g2d.fill(rect);
+        g2d.fill(circ);
     }
 
     
     public void mousePressed(MouseEvent e) {
         if (rect.contains(e.getPoint())) 
             draggedShape = rect;
-
-        else if(circ.contains(e.getPoint()))
+        else if (circ.contains(e.getPoint()))
             draggedShape = circ;
+        else
+            return;
+    
+        Point screenPoint = SwingUtilities.convertPoint(this, e.getPoint(), getRootPane());
+    
+        glassPane.setShape(draggedShape, new Point(0, 0));
+        glassPane.updateLocation(screenPoint);
     }
+    
     
     
     public void mouseDragged(MouseEvent e) {
         if (draggedShape != null && drawPane != null) {
             Point screenPoint = SwingUtilities.convertPoint(this, e.getPoint(), getRootPane());
-            ((DragGlassPane) getRootPane().getGlassPane()).setShape(draggedShape, screenPoint);
+            glassPane.updateLocation(screenPoint); 
         }
     }
     
@@ -69,7 +86,7 @@ public class ShapesPanel extends JPanel implements MouseListener, MouseMotionLis
         }
     
         // clear the temp view 
-        ((DragGlassPane) getRootPane().getGlassPane()).clearShape();
+        glassPane.clearShape();
         draggedShape = null;
     }
 

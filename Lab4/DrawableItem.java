@@ -5,12 +5,15 @@ import java.awt.geom.*;
 
 abstract class DrawableItem {
     protected AffineTransform transform;
+    protected Rectangle2D originalBounds;
 
     public abstract void draw(Graphics2D g2d);
 
-    public abstract Shape getOriginalShape(); 
-
     public abstract String serialize();
+
+    public Shape getOriginalShape() {
+        return originalBounds;
+    }
 
     public void translate(double dx, double dy) {
         AffineTransform currentTransform = getTransform();
@@ -51,17 +54,16 @@ abstract class DrawableItem {
     }
 
     public double getCenterX() {
-        Rectangle2D bounds = transform.createTransformedShape(getOriginalShape()).getBounds2D();
+        Rectangle2D bounds = transform.createTransformedShape(originalBounds).getBounds2D();
         return bounds.getCenterX();
     }
 
     public double getCenterY() {
-        Rectangle2D bounds = transform.createTransformedShape(getOriginalShape()).getBounds2D();
+        Rectangle2D bounds = transform.createTransformedShape(originalBounds).getBounds2D();
         return bounds.getCenterY();
     }
 
     public Point2D[] getCorners() {
-        Rectangle2D originalBounds = getOriginalShape().getBounds2D();
         
         // four corners of the original shape
         Point2D[] originalCorners = {
@@ -89,11 +91,6 @@ abstract class DrawableItem {
             }
         }
         return -1; 
-    }
-
-    
-    public void resetTransform() {
-        transform = new AffineTransform();
     }
 
     public AffineTransform getTransform() {

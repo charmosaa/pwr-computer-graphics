@@ -7,7 +7,6 @@ class ShapeItem extends DrawableItem {
     Shape shape;
     Color color;
     boolean isCirc = false;
-    Rectangle2D originalBounds;
 
     ShapeItem(Shape shape, Color color, boolean isCirc) {
         this.shape = shape;
@@ -25,8 +24,14 @@ class ShapeItem extends DrawableItem {
     }
 
     @Override
-    public Shape getOriginalShape() {
+    public Shape getOriginalShape(){
         return shape;
+    }
+
+    public void drawBounds(Graphics2D g2d){
+        Shape transformedBounds = transform.createTransformedShape(originalBounds);
+        g2d.setColor(Color.red);
+        g2d.draw(transformedBounds);
     }
 
     @Override

@@ -41,6 +41,9 @@ class SmpWindow extends JFrame {
         setGlassPane(glassPane);
         glassPane.setVisible(true);
 
+
+        imagePanel.setGlassPane(glassPane);
+        shapesPanel.setGlassPane(glassPane);
         setVisible(true);
     }
 }
