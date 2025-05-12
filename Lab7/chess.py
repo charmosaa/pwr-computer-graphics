@@ -2,6 +2,7 @@ import pygame
 from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
+import math
 
 def init_lighting():
     glEnable(GL_LIGHTING)
@@ -153,6 +154,8 @@ def main():
     
     clock = pygame.time.Clock()
     angle = 0
+    camera_distance = 10  # distance from center of the board
+    camera_height = 10     # height above the board
     
     while True:
         for event in pygame.event.get():
@@ -166,14 +169,26 @@ def main():
         
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
         
+        # update camera position 
         angle += 0.5
-        glPushMatrix()
-        glRotatef(angle, 0, 1, 0)
+        rad = angle * math.pi / 180  
         
+        # calculate camera position
+        cam_x = camera_distance * math.sin(rad)
+        cam_z = camera_distance * math.cos(rad)
+        
+        # Set up view matrix (camera)
+        glMatrixMode(GL_MODELVIEW)
+        glLoadIdentity()
+        gluLookAt(
+            cam_x, camera_height, cam_z,  # camera position
+            0, 0, 0,                      # look at point (center)
+            0, 1, 0                       # up vector
+        )
+        
+        # draw scene 
         draw_chessboard()
         draw_pawns()
-        
-        glPopMatrix()
         
         pygame.display.flip()
         clock.tick(60)
