@@ -7,35 +7,40 @@ import math
 def init_lighting():
     glEnable(GL_LIGHTING)
     
-    # spotlight 0
-    glLightfv(GL_LIGHT0, GL_POSITION, (-2.0, 4.0, -3.0, 1.0)) 
-    glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, (0.0, -1.0, 0.0))  
+    # spotlight 0 - cold
+    glLightfv(GL_LIGHT0, GL_POSITION, (-2.0, 4.0, -2.5, 1.0)) 
+    glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, (0.3, -1.0, 0.0))  
     glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 20.0) 
     glLightfv(GL_LIGHT0, GL_DIFFUSE, (0.5, 0.5, 0.7, 1.0))  # cold light
     glLightfv(GL_LIGHT0, GL_SPECULAR, (1.0, 1.0, 1.0, 1.0))
     glEnable(GL_LIGHT0)
     
-    # spotlight 1
-    glLightfv(GL_LIGHT1, GL_POSITION, (3.0, 5.0, 3.0, 1.0)) 
-    glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, (0.0, -1.0, 0.0))  
-    glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 30.0)  
+    # spotlight 1 - warm
+    glLightfv(GL_LIGHT1, GL_POSITION, (2, 5.0, 2, 1.0)) 
+    glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, (-0.1, -1.0, 0))  
+    glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 20.0)  
     glLightfv(GL_LIGHT1, GL_DIFFUSE, (0.9, 0.9, 0.7, 1.0))  # warm light
     glLightfv(GL_LIGHT1, GL_SPECULAR, (1.0, 1.0, 0.8, 1.0))
     glEnable(GL_LIGHT1)
+
+    # spotlight 2 - color
+    glLightfv(GL_LIGHT2, GL_POSITION, (-2.5, 3.0, 2.5, 1.0)) 
+    glLightfv(GL_LIGHT2, GL_SPOT_DIRECTION, (-0.2, -1.0, 0.1))  
+    glLightf(GL_LIGHT2, GL_SPOT_CUTOFF, 20.0)  
+    glLightfv(GL_LIGHT2, GL_DIFFUSE, (0.9, 0.2, 0.2, 1.0))  # red light
+    glLightfv(GL_LIGHT2, GL_SPECULAR, (1.0, 1.0, 0.8, 1.0))
+    glEnable(GL_LIGHT2)
     
     # global light (ambient)
-    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, (0.1, 0.1, 0.1, 1.0))
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, (0.07, 0.07, 0.07, 1.0))
     glEnable(GL_COLOR_MATERIAL)
     glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE)
 
 def init():
     glEnable(GL_DEPTH_TEST)
-    glClearColor(0.2, 0.2, 0.4, 1.0)
+    glClearColor(0.2, 0.2, 0.2, 1.0)
     glMatrixMode(GL_PROJECTION)
     gluPerspective(45, (800/600), 0.1, 50.0)
-    glMatrixMode(GL_MODELVIEW)
-    gluLookAt(5, 8, 10, 0, 0, 0, 0, 1, 0)
-    init_lighting()
 
 def draw_chessboard():
     glBegin(GL_QUADS)
@@ -153,8 +158,10 @@ def main():
     init()
     
     clock = pygame.time.Clock()
+
+    # for camera movement
     angle = 0
-    camera_distance = 10  # distance from center of the board
+    camera_radius = 10   # distance from center of the board
     camera_height = 10     # height above the board
     
     while True:
@@ -174,8 +181,8 @@ def main():
         rad = angle * math.pi / 180  
         
         # calculate camera position
-        cam_x = camera_distance * math.sin(rad)
-        cam_z = camera_distance * math.cos(rad)
+        cam_x = camera_radius * math.cos(rad)
+        cam_z = camera_radius * math.sin(rad)
         
         # Set up view matrix (camera)
         glMatrixMode(GL_MODELVIEW)
@@ -185,8 +192,9 @@ def main():
             0, 0, 0,                      # look at point (center)
             0, 1, 0                       # up vector
         )
-        
+
         # draw scene 
+        init_lighting()
         draw_chessboard()
         draw_pawns()
         
