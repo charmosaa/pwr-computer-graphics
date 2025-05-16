@@ -8,9 +8,9 @@ def init_lighting():
     glEnable(GL_LIGHTING)
     
     # spotlight 0 - cold
-    glLightfv(GL_LIGHT0, GL_POSITION, (-2.0, 4.0, -2.5, 1.0)) 
+    glLightfv(GL_LIGHT0, GL_POSITION, (-2.0, 15.0, -2.5, 1.0)) 
     glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, (0.3, -1.0, 0.0))  
-    glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 20.0) 
+    glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 5.0) 
     glLightfv(GL_LIGHT0, GL_DIFFUSE, (0.5, 0.5, 0.7, 1.0))  # cold light
     glLightfv(GL_LIGHT0, GL_SPECULAR, (1.0, 1.0, 1.0, 1.0))
     glEnable(GL_LIGHT0)
@@ -62,20 +62,30 @@ def draw_chessboard():
             glVertex3f(x, 0, z + 1)
     glEnd()
 
-def draw_pawn(quadric):
+def draw_pawn(quadric, color, pawn_angle = 0):
     """Draws a single pawn as a combination of transformed spheres"""
     glPushMatrix()
+    glRotatef(pawn_angle, 0, 1, 0)
 
+    glColor3f(0.5, 0.7, 0.5)
+    # bottom cube part
+    glPushMatrix()
+    glTranslatef(0, 0.1, 0)  
+    glScalef(0.6, 0.2, 0.6) 
+    draw_cube() 
+    glPopMatrix()
+
+    glColor3f(*color)
     # bottom - half sphere
     glPushMatrix()
-    glTranslatef(0, 0.1, 0) 
+    glTranslatef(0, 0.3, 0) 
     glScalef(1.5, 1, 1.5)  
     gluSphere(quadric, 0.2, 32, 32)
     glPopMatrix()
 
     # ring
     glPushMatrix()
-    glTranslatef(0, 0.3, 0)  
+    glTranslatef(0, 0.5, 0)  
     glScalef(1.3, 0.2, 1.3)  
     glEnable(GL_NORMALIZE)  # fixes normals after scaling
     gluSphere(quadric, 0.2, 32, 32)
@@ -84,14 +94,14 @@ def draw_pawn(quadric):
     
     # middle - long part 
     glPushMatrix()
-    glTranslatef(0, 0.3, 0)  
+    glTranslatef(0, 0.5, 0)  
     glScalef(0.7, 2, 0.7)  
     gluSphere(quadric, 0.2, 32, 32)
     glPopMatrix()
     
     # upper ring
     glPushMatrix()
-    glTranslatef(0, 0.6, 0)  
+    glTranslatef(0, 0.7, 0)  
     glScalef(1, 0.2, 1)  
     glEnable(GL_NORMALIZE)  # fixes normals after scaling
     gluSphere(quadric, 0.2, 32, 32)
@@ -100,20 +110,20 @@ def draw_pawn(quadric):
     
     # top - sphere
     glPushMatrix()
-    glTranslatef(0, 0.8, 0)  
+    glTranslatef(0, 0.9, 0)  
     glScalef(1, 1, 1)  
     gluSphere(quadric, 0.2, 32, 32)
     glPopMatrix()
         
     glPopMatrix()
 
-def draw_pawns():
+def draw_pawns(pawn_angle = 0):
     """Draws all pawns on the chessboard"""
     quadric = gluNewQuadric()
     gluQuadricNormals(quadric, GLU_SMOOTH)
     
     # white pawn material
-    glColor3f(0.9, 0.9, 0.9)
+    white_color = (0.9, 0.9, 0.9)
     glMaterialfv(GL_FRONT, GL_DIFFUSE, (0.7, 0.7, 0.7, 1.0))
     glMaterialfv(GL_FRONT, GL_SPECULAR, (0.7, 0.7, 0.7, 1.0))
     glMaterialf(GL_FRONT, GL_SHININESS, 5)
@@ -122,16 +132,16 @@ def draw_pawns():
     for i in range(8):
         glPushMatrix()
         glTranslatef(i - 3.5, 0, -2.5)  # position the pawn on the board (x,z)
-        draw_pawn(quadric)  
+        draw_pawn(quadric, white_color, pawn_angle)  
         glPopMatrix()
 
         glPushMatrix()
         glTranslatef(i - 3.5, 0, -3.5) 
-        draw_pawn(quadric)  
+        draw_pawn(quadric, white_color, pawn_angle)  
         glPopMatrix()
     
     # black pawn material
-    glColor3f(0.1, 0.1, 0.1)
+    black_color = (0.1, 0.1, 0.1)
     glMaterialfv(GL_FRONT, GL_DIFFUSE, (0.1, 0.1, 0.1, 1.0))
     glMaterialfv(GL_FRONT, GL_SPECULAR, (0.1, 0.1, 0.1, 1.0))
     glMaterialf(GL_FRONT, GL_SHININESS, 5)
@@ -140,15 +150,63 @@ def draw_pawns():
     for i in range(8):
         glPushMatrix()
         glTranslatef(i - 3.5, 0, 2.5)  # position the pawn on the board (x,z)
-        draw_pawn(quadric)  
+        draw_pawn(quadric, black_color, pawn_angle)  
         glPopMatrix()
 
         glPushMatrix()
         glTranslatef(i - 3.5, 0, 3.5) 
-        draw_pawn(quadric)  
+        draw_pawn(quadric, black_color, pawn_angle)  
         glPopMatrix()
     
     gluDeleteQuadric(quadric)
+
+def draw_cube():
+    glBegin(GL_QUADS)
+
+    # front Face (Z positive)
+    glNormal3f(0, 0, 1)
+    glVertex3f(-0.5, -0.5, 0.5)
+    glVertex3f(0.5, -0.5, 0.5)
+    glVertex3f(0.5, 0.5, 0.5)
+    glVertex3f(-0.5, 0.5, 0.5)
+
+    # back Face (Z negative)
+    glNormal3f(0, 0, -1)
+    glVertex3f(-0.5, -0.5, -0.5)
+    glVertex3f(0.5, -0.5, -0.5)
+    glVertex3f(0.5, 0.5, -0.5)
+    glVertex3f(-0.5, 0.5, -0.5)
+
+    # top Face (Y positive)
+    glNormal3f(0, 0.1, 0)
+    glVertex3f(-0.5, 0.5, -0.5)
+    glVertex3f(0.5, 0.5, -0.5)
+    glVertex3f(0.5, 0.5, 0.5)
+    glVertex3f(-0.5, 0.5, 0.5)
+
+    # bottom Face (Y negative)
+    glNormal3f(0, -1, 0)
+    glVertex3f(-0.5, -0.5, -0.5)
+    glVertex3f(0.5, -0.5, -0.5)
+    glVertex3f(0.5, -0.5, 0.5)
+    glVertex3f(-0.5, -0.5, 0.5)
+
+    # right Face (X positive)
+    glNormal3f(1, 0, 0)
+    glVertex3f(0.5, -0.5, -0.5)
+    glVertex3f(0.5, 0.5, -0.5)
+    glVertex3f(0.5, 0.5, 0.5)
+    glVertex3f(0.5, -0.5, 0.5)
+
+    # left Face (X negative)
+    glNormal3f(-1, 0, 0)
+    glVertex3f(-0.5, -0.5, -0.5)
+    glVertex3f(-0.5, 0.5, -0.5)
+    glVertex3f(-0.5, 0.5, 0.5)
+    glVertex3f(-0.5, -0.5, 0.5)
+
+    glEnd()
+
 
 def main():
     pygame.init()
@@ -163,6 +221,9 @@ def main():
     angle = 0
     camera_radius = 10   # distance from center of the board
     camera_height = 10     # height above the board
+
+    # for pawn movement
+    pawn_angle = 0
     
     while True:
         for event in pygame.event.get():
@@ -179,12 +240,14 @@ def main():
         # update camera position 
         angle += 0.5
         rad = angle * math.pi / 180  
+
+        pawn_angle -= 0.5
         
         # calculate camera position
         cam_x = camera_radius * math.cos(rad)
         cam_z = camera_radius * math.sin(rad)
         
-        # Set up view matrix (camera)
+        # set up view matrix (camera)
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
         gluLookAt(
@@ -196,7 +259,7 @@ def main():
         # draw scene 
         init_lighting()
         draw_chessboard()
-        draw_pawns()
+        draw_pawns(pawn_angle)
         
         pygame.display.flip()
         clock.tick(60)
